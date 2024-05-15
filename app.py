@@ -8,6 +8,7 @@ from sklearn.neighbors import LocalOutlierFactor
 from sklearn.svm import OneClassSVM
 from sklearn.impute import SimpleImputer
 from sklearn.metrics import accuracy_score
+from hdbscan import HDBSCAN
 from sklearn.cluster import DBSCAN
 
 def load_data():
@@ -32,6 +33,10 @@ def train_models(X_train, X_test):
     dbscan = DBSCAN(eps=0.5, min_samples=5)
     predictions_dbscan = dbscan.fit_predict(X_test)
 
+    # Apply HDBSCAN
+    hdbscan = HDBSCAN(min_cluster_size=5)
+    predictions_hdbscan = hdbscan.fit_predict(X_test)
+
     # Apply KMeans
     kmeans = KMeans(n_clusters=2, random_state=42)
     predictions_kmeans = kmeans.fit_predict(X_test)
@@ -44,15 +49,16 @@ def train_models(X_train, X_test):
     svm = OneClassSVM(kernel='rbf', nu=0.05)
     predictions_svm = svm.fit_predict(X_test)
 
-    return outlier_preds, predictions_dbscan, predictions_kmeans, predictions_lof, predictions_svm
+    return outlier_preds, predictions_dbscan, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm
 
-def calculate_accuracies(outlier_preds, predictions_dbscan, predictions_kmeans, predictions_lof, predictions_svm):
+def calculate_accuracies(outlier_preds, predictions_dbscan, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm):
     accuracy_dbscan = accuracy_score(outlier_preds, predictions_dbscan)
+    accuracy_hdbscan = accuracy_score(outlier_preds, predictions_hdbscan)
     accuracy_kmeans = accuracy_score(outlier_preds, predictions_kmeans)
     accuracy_lof = accuracy_score(outlier_preds, predictions_lof)
     accuracy_svm = accuracy_score(outlier_preds, predictions_svm)
     accuracy_iforest = accuracy_score(outlier_preds, outlier_preds)
-    return accuracy_dbscan, accuracy_kmeans, accuracy_lof, accuracy_svm, accuracy_iforest
+    return accuracy_dbscan, accuracy_hdbscan, accuracy_kmeans, accuracy_lof, accuracy_svm, accuracy_iforest
 
 # Streamlit App
 st.title('Outlier Detection Model Accuracy')
@@ -65,14 +71,16 @@ X_preprocessed = preprocess_data(data)
 X_train, X_test, _, _ = train_test_split(X_preprocessed, X_preprocessed, test_size=0.3, random_state=42)
 
 # Train models and get predictions
-outlier_preds, predictions_dbscan, predictions_kmeans, predictions_lof, predictions_svm = train_models(X_train, X_test)
+outlier_preds, predictions_dbscan, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm = train_models(X_train, X_test)
 
 # Calculate accuracies
-accuracy_dbscan, accuracy_kmeans, accuracy_lof, accuracy_svm, accuracy_iforest = calculate_accuracies(outlier_preds, predictions_dbscan, predictions_kmeans, predictions_lof, predictions_svm)
+accuracy_dbscan, accuracy_hdbscan, accuracy_kmeans, accuracy_lof, accuracy_svm, accuracy_iforest = calculate_accuracies(outlier_preds, predictions_dbscan, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm)
 
 # Display accuracies
 st.write(f"Accuracy for DBSCAN: {accuracy_dbscan}")
+st.write(f"Accuracy for HDBSCAN: {accuracy_hdbscan}")
 st.write(f"Accuracy for KMeans: {accuracy_kmeans}")
 st.write(f"Accuracy for Local Outlier Factor: {accuracy_lof}")
 st.write(f"Accuracy for One-Class SVM: {accuracy_svm}")
 st.write(f"Accuracy for Isolation Forest: {accuracy_iforest}")
+
