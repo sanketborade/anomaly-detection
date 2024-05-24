@@ -61,7 +61,7 @@ def calculate_accuracies(outlier_preds, predictions_dbscan, predictions_hdbscan,
     return accuracy_dbscan, accuracy_hdbscan, accuracy_kmeans, accuracy_lof, accuracy_svm, accuracy_iforest
 
 # Streamlit App
-st.title('Outlier Detection Model Accuracy')
+st.title('Anomaly Detection')
 
 # Load and preprocess data
 data = load_data()
