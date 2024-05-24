@@ -65,12 +65,8 @@ def calculate_accuracies(outlier_preds, predictions_dbscan, predictions_hdbscan,
 # Streamlit App
 st.title('Anomaly Detection')
 
-# Create tabs
-tab_upload, tab_eda, tab_dbscan, tab_hdbscan, tab_kmeans, tab_lof, tab_svm, tab_iforest = st.tabs(["Upload CSV", "EDA", "DBSCAN", "HDBSCAN", "KMeans", "Local Outlier Factor", "One-Class SVM", "Isolation Forest"])
-
-with tab_upload:
-    # File uploader
-    uploaded_file = st.file_uploader("Upload your CSV file", type="csv")
+# File uploader
+uploaded_file = st.file_uploader("Upload your CSV file", type="csv")
 
 if uploaded_file is not None:
     # Load and preprocess data
@@ -86,42 +82,25 @@ if uploaded_file is not None:
     # Calculate accuracies
     accuracy_dbscan, accuracy_hdbscan, accuracy_kmeans, accuracy_lof, accuracy_svm, accuracy_iforest = calculate_accuracies(outlier_preds, predictions_dbscan, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm)
 
-    with tab_eda:
-        st.header("Exploratory Data Analysis")
-        st.subheader("Data Overview")
-        st.write(data.describe())
-        st.subheader("Missing Values")
-        st.write(data.isnull().sum())
-        
-        st.subheader("Data Distribution")
-        numeric_cols = data.select_dtypes(include=['float64', 'int64']).columns
-        for col in numeric_cols:
-            st.write(f"Distribution for {col}")
-            fig, ax = plt.subplots()
-            sns.histplot(data[col], ax=ax)
-            st.pyplot(fig)
-        
-        st.subheader("Pairplot")
-        fig = sns.pairplot(data[numeric_cols])
+    # Exploratory Data Analysis (EDA) tab
+    st.header("Exploratory Data Analysis")
+    st.subheader("Data Overview")
+    st.write(data.describe())
+    st.subheader("Missing Values")
+    st.write(data.isnull().sum())
+    
+    st.subheader("Data Distribution")
+    numeric_cols = data.select_dtypes(include=['float64', 'int64']).columns
+    for col in numeric_cols:
+        st.write(f"Distribution for {col}")
+        fig, ax = plt.subplots()
+        sns.histplot(data[col], ax=ax)
         st.pyplot(fig)
+    
+    st.subheader("Pairplot")
+    fig = sns.pairplot(data[numeric_cols])
+    st.pyplot(fig)
 
-    with tab_dbscan:
-        st.write(f"Accuracy for DBSCAN: {accuracy_dbscan}")
-
-    with tab_hdbscan:
-        st.write(f"Accuracy for HDBSCAN: {accuracy_hdbscan}")
-
-    with tab_kmeans:
-        st.write(f"Accuracy for KMeans: {accuracy_kmeans}")
-
-    with tab_lof:
-        st.write(f"Accuracy for Local Outlier Factor: {accuracy_lof}")
-
-    with tab_svm:
-        st.write(f"Accuracy for One-Class SVM: {accuracy_svm}")
-
-    with tab_iforest:
-        st.write(f"Accuracy for Isolation Forest: {accuracy_iforest}")
 else:
     st.write("Please upload a CSV file to proceed.")
 
