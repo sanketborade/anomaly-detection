@@ -25,6 +25,9 @@ def load_data(uploaded_file):
         except pd.errors.EmptyDataError:
             st.error("No columns to parse from file. Please upload a valid CSV file.")
             return None
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
+            return None
     return None
 
 def preprocess_data(data):
@@ -69,7 +72,7 @@ def calculate_accuracies(outlier_preds, predictions_dbscan, predictions_hdbscan,
     accuracy_kmeans = accuracy_score(outlier_preds, predictions_kmeans)
     accuracy_lof = accuracy_score(outlier_preds, predictions_lof)
     accuracy_svm = accuracy_score(outlier_preds, predictions_svm)
-    accuracy_iforest = accuracy_score(outlier_preds, outlier_preds)
+    accuracy_iforest = accuracy_score(outlier_preds, outlier_preds)  # Should always be 1.0
     return accuracy_dbscan, accuracy_hdbscan, accuracy_kmeans, accuracy_lof, accuracy_svm, accuracy_iforest
 
 # Streamlit App
