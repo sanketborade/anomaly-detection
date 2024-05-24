@@ -67,11 +67,11 @@ def calculate_accuracies(outlier_preds, predictions_dbscan, predictions_hdbscan,
     accuracy_kmeans = accuracy_score(outlier_preds, predictions_kmeans)
     accuracy_lof = accuracy_score(outlier_preds, predictions_lof)
     accuracy_svm = accuracy_score(outlier_preds, predictions_svm)
-    accuracy_iforest = accuracy_score(outlier_preds, outlier_preds)
+    accuracy_iforest = accuracy_score(outlier_preds, outlier_preds)  # Always 1
     return accuracy_dbscan, accuracy_hdbscan, accuracy_kmeans, accuracy_lof, accuracy_svm, accuracy_iforest
 
 # Streamlit App
-st.title('Outlier Detection Model Accuracy')
+st.title('Anomaly Detection')
 
 # Create tabs
 tab1, tab2, tab3 = st.tabs(["Data Upload", "EDA", "Modelling"])
