@@ -101,5 +101,15 @@ if uploaded_file is not None:
     fig = sns.pairplot(data[numeric_cols])
     st.pyplot(fig)
 
+    # Modelling tab
+    st.header("Modelling")
+    st.subheader("Accuracy of Models")
+    st.write(f"Accuracy for DBSCAN: {accuracy_dbscan}")
+    st.write(f"Accuracy for HDBSCAN: {accuracy_hdbscan}")
+    st.write(f"Accuracy for KMeans: {accuracy_kmeans}")
+    st.write(f"Accuracy for Local Outlier Factor: {accuracy_lof}")
+    st.write(f"Accuracy for One-Class SVM: {accuracy_svm}")
+    st.write(f"Accuracy for Isolation Forest: {accuracy_iforest}")
+
 else:
     st.write("Please upload a CSV file to proceed.")
