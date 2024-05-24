@@ -105,22 +105,23 @@ if uploaded_file is not None:
     st.header("Modelling")
     st.subheader("Accuracy of Models")
 
-    # Calculate accuracy for DBSCAN
-    accuracy_db, _, _, _, _, _ = calculate_accuracies(outlier_preds, predictions_dbscan, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm)
-    st.write(f"Accuracy for DBSCAN: {accuracy_db}")
+    st.write(f"Accuracy for DBSCAN: {accuracy_dbscan}")
+    st.write(f"Accuracy for HDBSCAN: {accuracy_hdbscan}")
+    st.write(f"Accuracy for KMeans: {accuracy_kmeans}")
+    st.write(f"Accuracy for Local Outlier Factor: {accuracy_lof}")
+    st.write(f"Accuracy for One-Class SVM: {accuracy_svm}")
 
-    # Calculate accuracy for HDBSCAN
-    accuracy_hdb, _, _, _, _, _ = calculate_accuracies(outlier_preds, predictions_hdbscan, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm)
-    st.write(f"Accuracy for HDBSCAN: {accuracy_hdb}")
+    # Determine the model with the highest accuracy
+    accuracies = {
+        "DBSCAN": accuracy_dbscan,
+        "HDBSCAN": accuracy_hdbscan,
+        "KMeans": accuracy_kmeans,
+        "Local Outlier Factor": accuracy_lof,
+        "One-Class SVM": accuracy_svm
+    }
 
-    # Calculate accuracy for KMeans
-    accuracy_km, _, _, _, _, _ = calculate_accuracies(outlier_preds, predictions_kmeans, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm)
-    st.write(f"Accuracy for KMeans: {accuracy_km}")
+    best_model = max(accuracies, key=accuracies.get)
+    st.subheader(f"Best Model: {best_model} with accuracy of {accuracies[best_model]:.2f}")
 
-    # Calculate accuracy for Local Outlier Factor
-    accuracy_lo, _, _, _, _, _ = calculate_accuracies(outlier_preds, predictions_lof, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm)
-    st.write(f"Accuracy for Local Outlier Factor: {accuracy_lo}")
-
-    # Calculate accuracy for One-Class SVM
-    accuracy_s, _, _, _, _, _ = calculate_accuracies(outlier_preds, predictions_svm, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm)
-   
+else:
+    st.write("Please upload a CSV file to proceed.")
