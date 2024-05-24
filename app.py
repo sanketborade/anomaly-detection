@@ -13,8 +13,18 @@ from sklearn.cluster import DBSCAN
 
 def load_data(uploaded_file):
     if uploaded_file is not None:
-        data = pd.read_csv(uploaded_file)
-        return data
+        try:
+            data = pd.read_csv(uploaded_file)
+            if data.empty:
+                st.error("The uploaded file is empty.")
+                return None
+            if len(data.columns) == 0:
+                st.error("The uploaded file has no columns.")
+                return None
+            return data
+        except pd.errors.EmptyDataError:
+            st.error("No columns to parse from file. Please upload a valid CSV file.")
+            return None
     return None
 
 def preprocess_data(data):
@@ -110,3 +120,4 @@ with tab3:
         st.write(f"Accuracy for Isolation Forest: {accuracy_iforest}")
     else:
         st.write("Please upload data in the 'Data Upload' tab")
+
