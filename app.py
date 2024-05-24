@@ -63,8 +63,12 @@ def calculate_accuracies(outlier_preds, predictions_dbscan, predictions_hdbscan,
 # Streamlit App
 st.title('Anomaly Detection')
 
-# File uploader
-uploaded_file = st.file_uploader("Upload your CSV file", type="csv")
+# Create tabs
+tab_upload, tab_dbscan, tab_hdbscan, tab_kmeans, tab_lof, tab_svm, tab_iforest = st.tabs(["Upload CSV", "DBSCAN", "HDBSCAN", "KMeans", "Local Outlier Factor", "One-Class SVM", "Isolation Forest"])
+
+with tab_upload:
+    # File uploader
+    uploaded_file = st.file_uploader("Upload your CSV file", type="csv")
 
 if uploaded_file is not None:
     # Load and preprocess data
@@ -80,25 +84,22 @@ if uploaded_file is not None:
     # Calculate accuracies
     accuracy_dbscan, accuracy_hdbscan, accuracy_kmeans, accuracy_lof, accuracy_svm, accuracy_iforest = calculate_accuracies(outlier_preds, predictions_dbscan, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm)
 
-    # Display accuracies in tabs
-    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["DBSCAN", "HDBSCAN", "KMeans", "Local Outlier Factor", "One-Class SVM", "Isolation Forest"])
-
-    with tab1:
+    with tab_dbscan:
         st.write(f"Accuracy for DBSCAN: {accuracy_dbscan}")
 
-    with tab2:
+    with tab_hdbscan:
         st.write(f"Accuracy for HDBSCAN: {accuracy_hdbscan}")
 
-    with tab3:
+    with tab_kmeans:
         st.write(f"Accuracy for KMeans: {accuracy_kmeans}")
 
-    with tab4:
+    with tab_lof:
         st.write(f"Accuracy for Local Outlier Factor: {accuracy_lof}")
 
-    with tab5:
+    with tab_svm:
         st.write(f"Accuracy for One-Class SVM: {accuracy_svm}")
 
-    with tab6:
+    with tab_iforest:
         st.write(f"Accuracy for Isolation Forest: {accuracy_iforest}")
 else:
     st.write("Please upload a CSV file to proceed.")
