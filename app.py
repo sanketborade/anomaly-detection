@@ -1,5 +1,7 @@
 import pandas as pd
 import streamlit as st
+import seaborn as sns
+import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import IsolationForest
@@ -64,7 +66,7 @@ def calculate_accuracies(outlier_preds, predictions_dbscan, predictions_hdbscan,
 st.title('Anomaly Detection')
 
 # Create tabs
-tab_upload, tab_dbscan, tab_hdbscan, tab_kmeans, tab_lof, tab_svm, tab_iforest = st.tabs(["Upload CSV", "DBSCAN", "HDBSCAN", "KMeans", "Local Outlier Factor", "One-Class SVM", "Isolation Forest"])
+tab_upload, tab_eda, tab_dbscan, tab_hdbscan, tab_kmeans, tab_lof, tab_svm, tab_iforest = st.tabs(["Upload CSV", "EDA", "DBSCAN", "HDBSCAN", "KMeans", "Local Outlier Factor", "One-Class SVM", "Isolation Forest"])
 
 with tab_upload:
     # File uploader
@@ -83,6 +85,25 @@ if uploaded_file is not None:
 
     # Calculate accuracies
     accuracy_dbscan, accuracy_hdbscan, accuracy_kmeans, accuracy_lof, accuracy_svm, accuracy_iforest = calculate_accuracies(outlier_preds, predictions_dbscan, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm)
+
+    with tab_eda:
+        st.header("Exploratory Data Analysis")
+        st.subheader("Data Overview")
+        st.write(data.describe())
+        st.subheader("Missing Values")
+        st.write(data.isnull().sum())
+        
+        st.subheader("Data Distribution")
+        numeric_cols = data.select_dtypes(include=['float64', 'int64']).columns
+        for col in numeric_cols:
+            st.write(f"Distribution for {col}")
+            fig, ax = plt.subplots()
+            sns.histplot(data[col], ax=ax)
+            st.pyplot(fig)
+        
+        st.subheader("Pairplot")
+        fig = sns.pairplot(data[numeric_cols])
+        st.pyplot(fig)
 
     with tab_dbscan:
         st.write(f"Accuracy for DBSCAN: {accuracy_dbscan}")
