@@ -11,8 +11,8 @@ from sklearn.metrics import accuracy_score
 from hdbscan import HDBSCAN
 from sklearn.cluster import DBSCAN
 
-def load_data():
-    data = pd.read_csv('reduced_variables.csv')
+def load_data(uploaded_file):
+    data = pd.read_csv(uploaded_file)
     return data
 
 def preprocess_data(data):
@@ -63,39 +63,46 @@ def calculate_accuracies(outlier_preds, predictions_dbscan, predictions_hdbscan,
 # Streamlit App
 st.title('Anomaly Detection')
 
-# Load and preprocess data
-data = load_data()
-X_preprocessed = preprocess_data(data)
+# File uploader
+uploaded_file = st.file_uploader("Upload your CSV file", type="csv")
 
-# Separate the data into training and testing sets
-X_train, X_test, _, _ = train_test_split(X_preprocessed, X_preprocessed, test_size=0.3, random_state=42)
+if uploaded_file is not None:
+    # Load and preprocess data
+    data = load_data(uploaded_file)
+    X_preprocessed = preprocess_data(data)
 
-# Train models and get predictions
-outlier_preds, predictions_dbscan, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm = train_models(X_train, X_test)
+    # Separate the data into training and testing sets
+    X_train, X_test, _, _ = train_test_split(X_preprocessed, X_preprocessed, test_size=0.3, random_state=42)
 
-# Calculate accuracies
-accuracy_dbscan, accuracy_hdbscan, accuracy_kmeans, accuracy_lof, accuracy_svm, accuracy_iforest = calculate_accuracies(outlier_preds, predictions_dbscan, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm)
+    # Train models and get predictions
+    outlier_preds, predictions_dbscan, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm = train_models(X_train, X_test)
 
-# Display accuracies in tabs
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["DBSCAN", "HDBSCAN", "KMeans", "Local Outlier Factor", "One-Class SVM", "Isolation Forest"])
+    # Calculate accuracies
+    accuracy_dbscan, accuracy_hdbscan, accuracy_kmeans, accuracy_lof, accuracy_svm, accuracy_iforest = calculate_accuracies(outlier_preds, predictions_dbscan, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm)
 
-with tab1:
-    st.write(f"Accuracy for DBSCAN: {accuracy_dbscan}")
+    # Display accuracies in tabs
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["DBSCAN", "HDBSCAN", "KMeans", "Local Outlier Factor", "One-Class SVM", "Isolation Forest"])
 
-with tab2:
-    st.write(f"Accuracy for HDBSCAN: {accuracy_hdbscan}")
+    with tab1:
+        st.write(f"Accuracy for DBSCAN: {accuracy_dbscan}")
 
-with tab3:
-    st.write(f"Accuracy for KMeans: {accuracy_kmeans}")
+    with tab2:
+        st.write(f"Accuracy for HDBSCAN: {accuracy_hdbscan}")
 
-with tab4:
-    st.write(f"Accuracy for Local Outlier Factor: {accuracy_lof}")
+    with tab3:
+        st.write(f"Accuracy for KMeans: {accuracy_kmeans}")
 
-with tab5:
-    st.write(f"Accuracy for One-Class SVM: {accuracy_svm}")
+    with tab4:
+        st.write(f"Accuracy for Local Outlier Factor: {accuracy_lof}")
 
-with tab6:
-    st.write(f"Accuracy for Isolation Forest: {accuracy_iforest}")
+    with tab5:
+        st.write(f"Accuracy for One-Class SVM: {accuracy_svm}")
+
+    with tab6:
+        st.write(f"Accuracy for Isolation Forest: {accuracy_iforest}")
+else:
+    st.write("Please upload a CSV file to proceed.")
+
 
    
 
