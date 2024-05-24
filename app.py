@@ -71,7 +71,7 @@ def calculate_accuracies(outlier_preds, predictions_dbscan, predictions_hdbscan,
     return accuracy_dbscan, accuracy_hdbscan, accuracy_kmeans, accuracy_lof, accuracy_svm, accuracy_iforest
 
 # Streamlit App
-st.title('Anomaly Detection')
+st.title('Outlier Detection Model Accuracy')
 
 # Create tabs
 tab1, tab2, tab3 = st.tabs(["Data Upload", "EDA", "Modelling"])
@@ -92,11 +92,12 @@ with tab2:
         st.write(data.describe())
 
         st.write("Pairplot")
-        sns.pairplot(data)
-        st.pyplot(plt)
+        pairplot_fig = sns.pairplot(data)
+        st.pyplot(pairplot_fig)
 
         st.write("Correlation Heatmap")
         corr = data.corr()
+        plt.figure(figsize=(10, 8))
         sns.heatmap(corr, annot=True, cmap='coolwarm')
         st.pyplot(plt)
     else:
@@ -127,5 +128,3 @@ with tab3:
         st.write(f"Accuracy for Isolation Forest: {accuracy_iforest}")
     else:
         st.write("Please upload data in the 'Data Upload' tab")
-
-
