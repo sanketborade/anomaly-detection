@@ -84,7 +84,7 @@ if uploaded_file is not None:
 
     # Exploratory Data Analysis (EDA) tab
     st.header("Exploratory Data Analysis")
-    st.subheader("Data Overview")
+    st.subheader("Data Overview", force_rerun=True)
     st.write(data.describe())
     st.subheader("Missing Values")
     st.write(data.isnull().sum())
@@ -103,7 +103,6 @@ if uploaded_file is not None:
 
 else:
     st.write("Please upload a CSV file to proceed.")
-
 
 
    
