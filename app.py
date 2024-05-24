@@ -11,24 +11,9 @@ from sklearn.metrics import accuracy_score
 from hdbscan import HDBSCAN
 from sklearn.cluster import DBSCAN
 
-def load_data(uploaded_file):
-    if uploaded_file is not None:
-        try:
-            data = pd.read_csv(uploaded_file)
-            if data.empty:
-                st.error("The uploaded file is empty.")
-                return None
-            if len(data.columns) == 0:
-                st.error("The uploaded file has no columns.")
-                return None
-            return data
-        except pd.errors.EmptyDataError:
-            st.error("No columns to parse from file. Please upload a valid CSV file.")
-            return None
-        except Exception as e:
-            st.error(f"An error occurred: {e}")
-            return None
-    return None
+def load_data():
+    data = pd.read_csv('reduced_variables.csv')
+    return data
 
 def preprocess_data(data):
     imputer = SimpleImputer(strategy='mean')
@@ -72,55 +57,45 @@ def calculate_accuracies(outlier_preds, predictions_dbscan, predictions_hdbscan,
     accuracy_kmeans = accuracy_score(outlier_preds, predictions_kmeans)
     accuracy_lof = accuracy_score(outlier_preds, predictions_lof)
     accuracy_svm = accuracy_score(outlier_preds, predictions_svm)
-    accuracy_iforest = accuracy_score(outlier_preds, outlier_preds)  # Should always be 1.0
+    accuracy_iforest = accuracy_score(outlier_preds, outlier_preds)
     return accuracy_dbscan, accuracy_hdbscan, accuracy_kmeans, accuracy_lof, accuracy_svm, accuracy_iforest
 
 # Streamlit App
 st.title('Anomaly Detection')
 
-# Create tabs
-tab1, tab2, tab3 = st.tabs(["Data Upload", "EDA", "Modelling"])
+# Load and preprocess data
+data = load_data()
+X_preprocessed = preprocess_data(data)
 
-# Data Upload Tab
+# Separate the data into training and testing sets
+X_train, X_test, _, _ = train_test_split(X_preprocessed, X_preprocessed, test_size=0.3, random_state=42)
+
+# Train models and get predictions
+outlier_preds, predictions_dbscan, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm = train_models(X_train, X_test)
+
+# Calculate accuracies
+accuracy_dbscan, accuracy_hdbscan, accuracy_kmeans, accuracy_lof, accuracy_svm, accuracy_iforest = calculate_accuracies(outlier_preds, predictions_dbscan, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm)
+
+# Display accuracies in tabs
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["DBSCAN", "HDBSCAN", "KMeans", "Local Outlier Factor", "One-Class SVM", "Isolation Forest"])
+
 with tab1:
-    st.header("Upload Your Data")
-    uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
-    data = load_data(uploaded_file)
-    if data is not None:
-        st.write("Data Loaded Successfully")
-        st.write(data.head())
+    st.write(f"Accuracy for DBSCAN: {accuracy_dbscan}")
 
-# EDA Tab
 with tab2:
-    st.header("Exploratory Data Analysis")
-    if data is not None:
-        st.write("Data Description")
-        st.write(data.describe())
-        # Additional EDA like pairplot and heatmap can be added here
+    st.write(f"Accuracy for HDBSCAN: {accuracy_hdbscan}")
 
-# Modelling Tab
 with tab3:
-    st.header("Model Training and Evaluation")
-    if data is not None:
-        # Preprocess data
-        X_preprocessed = preprocess_data(data)
+    st.write(f"Accuracy for KMeans: {accuracy_kmeans}")
 
-        # Separate the data into training and testing sets
-        X_train, X_test, _, _ = train_test_split(X_preprocessed, X_preprocessed, test_size=0.3, random_state=42)
+with tab4:
+    st.write(f"Accuracy for Local Outlier Factor: {accuracy_lof}")
 
-        # Train models and get predictions
-        outlier_preds, predictions_dbscan, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm = train_models(X_train, X_test)
+with tab5:
+    st.write(f"Accuracy for One-Class SVM: {accuracy_svm}")
 
-        # Calculate accuracies
-        accuracy_dbscan, accuracy_hdbscan, accuracy_kmeans, accuracy_lof, accuracy_svm, accuracy_iforest = calculate_accuracies(outlier_preds, predictions_dbscan, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm)
+with tab6:
+    st.write(f"Accuracy for Isolation Forest: {accuracy_iforest}")
 
-        # Display accuracies
-        st.write(f"Accuracy for DBSCAN: {accuracy_dbscan}")
-        st.write(f"Accuracy for HDBSCAN: {accuracy_hdbscan}")
-        st.write(f"Accuracy for KMeans: {accuracy_kmeans}")
-        st.write(f"Accuracy for Local Outlier Factor: {accuracy_lof}")
-        st.write(f"Accuracy for One-Class SVM: {accuracy_svm}")
-        st.write(f"Accuracy for Isolation Forest: {accuracy_iforest}")
-    else:
-        st.write("Please upload data in the 'Data Upload' tab")
+   
 
