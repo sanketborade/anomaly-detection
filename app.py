@@ -1,7 +1,5 @@
 import pandas as pd
 import streamlit as st
-import seaborn as sns
-import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import IsolationForest
@@ -13,16 +11,12 @@ from sklearn.metrics import accuracy_score
 from hdbscan import HDBSCAN
 from sklearn.cluster import DBSCAN
 
-# Function to load data
-def load_data():
-    uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+def load_data(uploaded_file):
     if uploaded_file is not None:
         data = pd.read_csv(uploaded_file)
         return data
-    else:
-        return None
+    return None
 
-# Function to preprocess data
 def preprocess_data(data):
     imputer = SimpleImputer(strategy='mean')
     data_imputed = pd.DataFrame(imputer.fit_transform(data), columns=data.columns)
@@ -31,7 +25,6 @@ def preprocess_data(data):
     X_preprocessed = preprocessor.fit_transform(X)
     return X_preprocessed
 
-# Function to train models
 def train_models(X_train, X_test):
     # Define and fit Isolation Forest
     iforest = IsolationForest(n_estimators=50, contamination='auto', random_state=42)
@@ -60,14 +53,13 @@ def train_models(X_train, X_test):
 
     return outlier_preds, predictions_dbscan, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm
 
-# Function to calculate accuracies
 def calculate_accuracies(outlier_preds, predictions_dbscan, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm):
     accuracy_dbscan = accuracy_score(outlier_preds, predictions_dbscan)
     accuracy_hdbscan = accuracy_score(outlier_preds, predictions_hdbscan)
     accuracy_kmeans = accuracy_score(outlier_preds, predictions_kmeans)
     accuracy_lof = accuracy_score(outlier_preds, predictions_lof)
     accuracy_svm = accuracy_score(outlier_preds, predictions_svm)
-    accuracy_iforest = accuracy_score(outlier_preds, outlier_preds)  # Always 1
+    accuracy_iforest = accuracy_score(outlier_preds, outlier_preds)
     return accuracy_dbscan, accuracy_hdbscan, accuracy_kmeans, accuracy_lof, accuracy_svm, accuracy_iforest
 
 # Streamlit App
@@ -79,7 +71,8 @@ tab1, tab2, tab3 = st.tabs(["Data Upload", "EDA", "Modelling"])
 # Data Upload Tab
 with tab1:
     st.header("Upload Your Data")
-    data = load_data()
+    uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+    data = load_data(uploaded_file)
     if data is not None:
         st.write("Data Loaded Successfully")
         st.write(data.head())
@@ -90,18 +83,7 @@ with tab2:
     if data is not None:
         st.write("Data Description")
         st.write(data.describe())
-
-        st.write("Pairplot")
-        pairplot_fig = sns.pairplot(data)
-        st.pyplot(pairplot_fig)
-
-        st.write("Correlation Heatmap")
-        corr = data.corr()
-        plt.figure(figsize=(10, 8))
-        sns.heatmap(corr, annot=True, cmap='coolwarm')
-        st.pyplot(plt)
-    else:
-        st.write("Please upload data in the 'Data Upload' tab")
+        # Additional EDA like pairplot and heatmap can be added here
 
 # Modelling Tab
 with tab3:
