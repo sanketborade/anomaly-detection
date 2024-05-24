@@ -104,12 +104,23 @@ if uploaded_file is not None:
     # Modelling tab
     st.header("Modelling")
     st.subheader("Accuracy of Models")
-    st.write(f"Accuracy for DBSCAN: {accuracy_dbscan}")
-    st.write(f"Accuracy for HDBSCAN: {accuracy_hdbscan}")
-    st.write(f"Accuracy for KMeans: {accuracy_kmeans}")
-    st.write(f"Accuracy for Local Outlier Factor: {accuracy_lof}")
-    st.write(f"Accuracy for One-Class SVM: {accuracy_svm}")
-    st.write(f"Accuracy for Isolation Forest: {accuracy_iforest}")
 
-else:
-    st.write("Please upload a CSV file to proceed.")
+    # Calculate accuracy for DBSCAN
+    accuracy_db, _, _, _, _, _ = calculate_accuracies(outlier_preds, predictions_dbscan, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm)
+    st.write(f"Accuracy for DBSCAN: {accuracy_db}")
+
+    # Calculate accuracy for HDBSCAN
+    accuracy_hdb, _, _, _, _, _ = calculate_accuracies(outlier_preds, predictions_hdbscan, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm)
+    st.write(f"Accuracy for HDBSCAN: {accuracy_hdb}")
+
+    # Calculate accuracy for KMeans
+    accuracy_km, _, _, _, _, _ = calculate_accuracies(outlier_preds, predictions_kmeans, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm)
+    st.write(f"Accuracy for KMeans: {accuracy_km}")
+
+    # Calculate accuracy for Local Outlier Factor
+    accuracy_lo, _, _, _, _, _ = calculate_accuracies(outlier_preds, predictions_lof, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm)
+    st.write(f"Accuracy for Local Outlier Factor: {accuracy_lo}")
+
+    # Calculate accuracy for One-Class SVM
+    accuracy_s, _, _, _, _, _ = calculate_accuracies(outlier_preds, predictions_svm, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm)
+   
