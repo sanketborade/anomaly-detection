@@ -51,7 +51,7 @@ def train_models(X_train, X_test):
     svm = OneClassSVM(kernel='rbf', nu=0.05)
     predictions_svm = svm.fit_predict(X_test)
 
-    return outlier_preds, predictions_dbscan, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm
+    return iforest, outlier_preds, dbscan, predictions_dbscan, hdbscan, predictions_hdbscan, kmeans, predictions_kmeans, lof, predictions_lof, svm, predictions_svm
 
 def calculate_accuracies(outlier_preds, predictions_dbscan, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm):
     accuracy_dbscan = accuracy_score(outlier_preds, predictions_dbscan)
@@ -59,8 +59,7 @@ def calculate_accuracies(outlier_preds, predictions_dbscan, predictions_hdbscan,
     accuracy_kmeans = accuracy_score(outlier_preds, predictions_kmeans)
     accuracy_lof = accuracy_score(outlier_preds, predictions_lof)
     accuracy_svm = accuracy_score(outlier_preds, predictions_svm)
-    accuracy_iforest = accuracy_score(outlier_preds, outlier_preds)
-    return accuracy_dbscan, accuracy_hdbscan, accuracy_kmeans, accuracy_lof, accuracy_svm, accuracy_iforest
+    return accuracy_dbscan, accuracy_hdbscan, accuracy_kmeans, accuracy_lof, accuracy_svm
 
 # Streamlit App
 st.title('Anomaly Detection')
@@ -77,10 +76,10 @@ if uploaded_file is not None:
     X_train, X_test, _, _ = train_test_split(X_preprocessed, X_preprocessed, test_size=0.3, random_state=42)
 
     # Train models and get predictions
-    outlier_preds, predictions_dbscan, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm = train_models(X_train, X_test)
+    iforest, outlier_preds, dbscan, predictions_dbscan, hdbscan, predictions_hdbscan, kmeans, predictions_kmeans, lof, predictions_lof, svm, predictions_svm = train_models(X_train, X_test)
 
     # Calculate accuracies
-    accuracy_dbscan, accuracy_hdbscan, accuracy_kmeans, accuracy_lof, accuracy_svm, accuracy_iforest = calculate_accuracies(outlier_preds, predictions_dbscan, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm)
+    accuracy_dbscan, accuracy_hdbscan, accuracy_kmeans, accuracy_lof, accuracy_svm = calculate_accuracies(outlier_preds, predictions_dbscan, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm)
 
     # Exploratory Data Analysis (EDA) tab
     st.header("Exploratory Data Analysis")
@@ -120,8 +119,32 @@ if uploaded_file is not None:
         "One-Class SVM": accuracy_svm
     }
 
-    best_model = max(accuracies, key=accuracies.get)
-    st.subheader(f"Best Model: {best_model} with accuracy of {accuracies[best_model]:.2f}")
+    best_model_name = max(accuracies, key=accuracies.get)
+    best_model_accuracy = accuracies[best_model_name]
+    st.subheader(f"Best Model: {best_model_name} with accuracy of {best_model_accuracy:.2f}")
+
+    # Retrain the best model on the entire dataset and score it
+    st.subheader("Scoring with the Best Model")
+
+    if best_model_name == "DBSCAN":
+        best_model = dbscan.fit(X_preprocessed)
+        scores = best_model.fit_predict(X_preprocessed)
+    elif best_model_name == "HDBSCAN":
+        best_model = hdbscan.fit(X_preprocessed)
+        scores = best_model.fit_predict(X_preprocessed)
+    elif best_model_name == "KMeans":
+        best_model = kmeans.fit(X_preprocessed)
+        scores = best_model.predict(X_preprocessed)
+    elif best_model_name == "Local Outlier Factor":
+        best_model = lof.fit(X_preprocessed)
+        scores = best_model.fit_predict(X_preprocessed)
+    elif best_model_name == "One-Class SVM":
+        best_model = svm.fit(X_preprocessed)
+        scores = best_model.predict(X_preprocessed)
+
+    data['Anomaly_Score'] = scores
+    st.write("Scored Data with Anomaly Scores")
+    st.write(data)
 
 else:
     st.write("Please upload a CSV file to proceed.")
