@@ -111,24 +111,43 @@ if uploaded_file is not None:
             st.pyplot(fig)
 
     with tab2:
-        st.header("Model Accuracy Score")
-        
-        # Display results
-        st.write("Accuracy for DBSCAN:", accuracy_dbscan)
-        st.write("Accuracy for HDBSCAN:", accuracy_hdbscan)
-        st.write("Accuracy for KMeans:", accuracy_kmeans)
-        st.write("Accuracy for Local Outlier Factor:", accuracy_lof)
-        st.write("Accuracy for One-Class SVM:", accuracy_svm)
-        st.write("Accuracy for Isolation Forest (perturbed):", accuracy_iforest)
+    
+    st.header("Model Accuracy Score")
+    
+    # Display results
+    st.write("Accuracy for DBSCAN:", accuracy_dbscan)
+    st.write("Accuracy for HDBSCAN:", accuracy_hdbscan)
+    st.write("Accuracy for KMeans:", accuracy_kmeans)
+    st.write("Accuracy for Local Outlier Factor:", accuracy_lof)
+    st.write("Accuracy for One-Class SVM:", accuracy_svm)
+    st.write("Accuracy for Isolation Forest (perturbed):", accuracy_iforest)
 
-        # Select the best model
-        accuracies = {
-            "DBSCAN": accuracy_dbscan,
-            "HDBSCAN": accuracy_hdbscan,
-            "KMeans": accuracy_kmeans,
-            "Local Outlier Factor": accuracy_lof,
-            "One-Class SVM": accuracy_svm,
-            "Isolation Forest (perturbed)": accuracy_iforest
-        }
-        best_model_name = max(accuracies, key=accuracies.get)
-        st.write(f"Best Model (Highest Accuracy): {best_model_name}")
+    # Select the best model
+    accuracies = {
+        "DBSCAN": accuracy_dbscan,
+        "HDBSCAN": accuracy_hdbscan,
+        "KMeans": accuracy_kmeans,
+        "Local Outlier Factor": accuracy_lof,
+        "One-Class SVM": accuracy_svm,
+        "Isolation Forest (perturbed)": accuracy_iforest
+    }
+    best_model_name = max(accuracies, key=accuracies.get)
+    st.write(f"Best Model (Highest Accuracy): {best_model_name}")
+
+    # Add an "Outlier" column based on the chosen model's predictions
+    if best_model_name == "DBSCAN" and len(predictions_dbscan) == len(data):
+        data['Outlier'] = np.where(predictions_dbscan == -1, 1, -1)
+    elif best_model_name == "HDBSCAN" and len(predictions_hdbscan) == len(data):
+        data['Outlier'] = np.where(predictions_hdbscan == -1, 1, -1)
+    elif best_model_name == "KMeans" and len(predictions_kmeans) == len(data):
+        data['Outlier'] = np.where(predictions_kmeans == -1, 1, -1)
+    elif best_model_name == "Local Outlier Factor" and len(predictions_lof) == len(data):
+        data['Outlier'] = np.where(predictions_lof == -1, 1, -1)
+    elif best_model_name == "One-Class SVM" and len(predictions_svm) == len(data):
+        data['Outlier'] = np.where(predictions_svm == -1, 1, -1)
+    elif best_model_name == "Isolation Forest (perturbed)" and len(outlier_preds_perturbed) == len(data):
+        data['Outlier'] = np.where(outlier_preds_perturbed == -1, 1, -1)
+
+    # Display the modified DataFrame with the "Outlier" column
+    st.subheader("Data with Outlier Column")
+    st.write(data.head())
