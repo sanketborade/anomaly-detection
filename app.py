@@ -154,4 +154,10 @@ if uploaded_file is not None:
             model.fit(X_preprocessed)
             scores = model.predict(X_preprocessed)
         elif best_model_name == "Local Outlier Factor":
-            model = LocalOutlierFactor(novelty
+            model = LocalOutlierFactor(novelty=False, contamination='auto')
+            model.fit(X_preprocessed)
+            scores = model.fit_predict(X_preprocessed)
+        elif best_model_name == "One-Class SVM":
+            model = OneClassSVM(kernel='rbf', nu=0.05)
+            model.fit(X_preprocessed)
+            scores = model.predict(X
