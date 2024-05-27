@@ -142,3 +142,4 @@ if uploaded_file is not None:
         elif best_model_name == "Local Outlier Factor" and len(predictions_lof) == len(data):
             data['Outliers'] = np.where(predictions_lof == -1, 1, 0)
         elif best_model_name == "One-Class SVM" and len(predictions_svm) == len(data):
+            data['Outliers'] = np.where(predictions_lof == -1, 1, 0)
