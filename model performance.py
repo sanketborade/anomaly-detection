@@ -25,13 +25,10 @@ preprocessor = StandardScaler()
 X = data_imputed.drop(columns=['Outlier']) if 'Outlier' in data_imputed.columns else data_imputed
 X_preprocessed = preprocessor.fit_transform(X)
 
-# Modify the dataset (e.g., shuffling the data)
-np.random.shuffle(X_preprocessed)
-
-# Separate the data into training and testing sets
+# Separate the data into training and testing sets with a fixed random state
 X_train, X_test, _, _ = train_test_split(X_preprocessed, X_preprocessed, test_size=0.3, random_state=42)
 
-# Define and fit Isolation Forest
+# Define and fit Isolation Forest with a fixed random state
 iforest = IsolationForest(n_estimators=50, contamination='auto', random_state=42)
 iforest.fit(X_train)
 
@@ -66,6 +63,7 @@ accuracy_lof = accuracy_score(outlier_preds, predictions_lof)
 accuracy_svm = accuracy_score(outlier_preds, predictions_svm)
 
 # Introduce perturbation to reduce the accuracy of the Isolation Forest
+np.random.seed(42)  # Set a fixed seed for reproducibility
 perturbation = np.random.choice([1, -1], size=outlier_preds.shape, p=[0.05, 0.95])
 outlier_preds_perturbed = np.where(perturbation == 1, -outlier_preds, outlier_preds)
 
