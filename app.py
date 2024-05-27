@@ -84,7 +84,7 @@ if uploaded_file is not None:
     accuracy_iforest = accuracy_score(outlier_preds, outlier_preds_perturbed)
 
     # Create tabs
-    tab1, tab2, tab3 = st.tabs(["Exploratory Data Analysis", "Outlier Detection", "Modeling"])
+    tab1, tab2 = st.tabs(["Exploratory Data Analysis", "Modeling"])
 
     with tab1:
         st.header("Exploratory Data Analysis")
@@ -111,18 +111,16 @@ if uploaded_file is not None:
             st.pyplot(fig)
 
     with tab2:
-        st.header("Outlier Detection Model Accuracy")
-        
+        st.header("Modeling and Outlier Detection Model Accuracy")
+
         # Display results
+        st.subheader("Outlier Detection Model Accuracy")
         st.write("Accuracy for DBSCAN:", accuracy_dbscan)
         st.write("Accuracy for HDBSCAN:", accuracy_hdbscan)
         st.write("Accuracy for KMeans:", accuracy_kmeans)
         st.write("Accuracy for Local Outlier Factor:", accuracy_lof)
         st.write("Accuracy for One-Class SVM:", accuracy_svm)
         st.write("Accuracy for Isolation Forest (perturbed):", accuracy_iforest)
-
-    with tab3:
-        st.header("Modeling")
 
         accuracies = {
             "Isolation Forest": accuracy_iforest,
