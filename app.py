@@ -84,20 +84,9 @@ if uploaded_file is not None:
     accuracy_iforest = accuracy_score(outlier_preds, outlier_preds_perturbed)
 
     # Create tabs
-    tab1, tab2, tab3 = st.tabs(["Outlier Detection", "Exploratory Data Analysis", "Modeling"])
+    tab1, tab2, tab3 = st.tabs(["Exploratory Data Analysis", "Outlier Detection", "Modeling"])
 
     with tab1:
-        st.header("Outlier Detection Model Accuracy")
-        
-        # Display results
-        st.write("Accuracy for DBSCAN:", accuracy_dbscan)
-        st.write("Accuracy for HDBSCAN:", accuracy_hdbscan)
-        st.write("Accuracy for KMeans:", accuracy_kmeans)
-        st.write("Accuracy for Local Outlier Factor:", accuracy_lof)
-        st.write("Accuracy for One-Class SVM:", accuracy_svm)
-        st.write("Accuracy for Isolation Forest (perturbed):", accuracy_iforest)
-
-    with tab2:
         st.header("Exploratory Data Analysis")
         
         st.subheader("Data Preview")
@@ -120,6 +109,17 @@ if uploaded_file is not None:
         if st.button("Generate Pair Plot"):
             fig = sns.pairplot(data)
             st.pyplot(fig)
+
+    with tab2:
+        st.header("Outlier Detection Model Accuracy")
+        
+        # Display results
+        st.write("Accuracy for DBSCAN:", accuracy_dbscan)
+        st.write("Accuracy for HDBSCAN:", accuracy_hdbscan)
+        st.write("Accuracy for KMeans:", accuracy_kmeans)
+        st.write("Accuracy for Local Outlier Factor:", accuracy_lof)
+        st.write("Accuracy for One-Class SVM:", accuracy_svm)
+        st.write("Accuracy for Isolation Forest (perturbed):", accuracy_iforest)
 
     with tab3:
         st.header("Modeling")
@@ -154,15 +154,4 @@ if uploaded_file is not None:
             model.fit(X_preprocessed)
             scores = model.predict(X_preprocessed)
         elif best_model_name == "Local Outlier Factor":
-            model = LocalOutlierFactor(novelty=False, contamination='auto')
-            model.fit(X_preprocessed)
-            scores = model.fit_predict(X_preprocessed)
-        elif best_model_name == "One-Class SVM":
-            model = OneClassSVM(kernel='rbf', nu=0.05)
-            model.fit(X_preprocessed)
-            scores = model.predict(X_preprocessed)
-
-        st.subheader(f"Scoring the Input Data Using {best_model_name}")
-        st.write(scores)
-else:
-    st.info("Please upload a CSV file to proceed.")
+            model = LocalOutlierFactor(novelty
