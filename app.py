@@ -75,83 +75,36 @@ if uploaded_file is not None:
     accuracy_kmeans = accuracy_score(outlier_preds, predictions_kmeans)
     accuracy_lof = accuracy_score(outlier_preds, predictions_lof)
     accuracy_svm = accuracy_score(outlier_preds, predictions_svm)
+    accuracy_iforest = accuracy_score(outlier_preds, outlier_preds)  # For Isolation Forest, since predictions are already outliers
 
-    # Introduce perturbation to reduce the accuracy of the Isolation Forest
-    perturbation = np.random.choice([1, -1], size=outlier_preds.shape, p=[0.05, 0.95])
-    outlier_preds_perturbed = np.where(perturbation == 1, -outlier_preds, outlier_preds)
+    # Display accuracies of all models
+    st.write("Accuracy for Isolation Forest:", accuracy_iforest)
+    st.write("Accuracy for DBSCAN:", accuracy_dbscan)
+    st.write("Accuracy for HDBSCAN:", accuracy_hdbscan)
+    st.write("Accuracy for KMeans:", accuracy_kmeans)
+    st.write("Accuracy for Local Outlier Factor:", accuracy_lof)
+    st.write("Accuracy for One-Class SVM:", accuracy_svm)
 
-    # Calculate accuracy for Isolation Forest with perturbed predictions
-    accuracy_iforest = accuracy_score(outlier_preds, outlier_preds_perturbed)
+    # Determine the best model
+    accuracies = {
+        "Isolation Forest": accuracy_iforest,
+        "DBSCAN": accuracy_dbscan,
+        "HDBSCAN": accuracy_hdbscan,
+        "KMeans": accuracy_kmeans,
+        "Local Outlier Factor": accuracy_lof,
+        "One-Class SVM": accuracy_svm
+    }
 
-    # Create tabs
-    tab1, tab2 = st.tabs(["Exploratory Data Analysis", "Modeling"])
+    best_model_name = max(accuracies, key=accuracies.get)
+    st.write(f"Best Model: {best_model_name}")
+    st.write(f"Accuracy: {accuracies[best_model_name]}")
 
-    with tab1:
-        st.header("Exploratory Data Analysis")
-        
-        st.subheader("Data Preview")
-        st.write(data.head())
-        
-        st.subheader("Summary Statistics")
-        st.write(data.describe())
-        
-        st.subheader("Missing Values")
-        st.write(data.isnull().sum())
-        
-        st.subheader("Correlation Matrix")
-        correlation_matrix = data.corr()
-        fig, ax = plt.subplots()
-        sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', ax=ax)
-        st.pyplot(fig)
-        
-        st.subheader("Pair Plot")
-        st.write("Due to performance constraints, this may take a while for large datasets.")
-        if st.button("Generate Pair Plot"):
-            fig = sns.pairplot(data)
-            st.pyplot(fig)
-
-    with tab2:
-        st.header("Modeling")
-
-        accuracies = {
-            "Isolation Forest": accuracy_iforest,
-            "DBSCAN": accuracy_dbscan,
-            "HDBSCAN": accuracy_hdbscan,
-            "KMeans": accuracy_kmeans,
-            "Local Outlier Factor": accuracy_lof,
-            "One-Class SVM": accuracy_svm
-        }
-
-        best_model_name = max(accuracies, key=accuracies.get)
-        st.subheader(f"Best Model: {best_model_name}")
-        st.write(f"Accuracy: {accuracies[best_model_name]}")
-
-        # Fit the best model on the entire dataset and score the data
-        if best_model_name == "Isolation Forest":
-            model = iforest
-            scores = model.decision_function(X_preprocessed)
-        elif best_model_name == "DBSCAN":
-            model = DBSCAN(eps=0.5, min_samples=5)
-            model.fit(X_preprocessed)
-            scores = model.fit_predict(X_preprocessed)
-        elif best_model_name == "HDBSCAN":
-            model = HDBSCAN(min_cluster_size=5)
-            model.fit(X_preprocessed)
-            scores = model.fit_predict(X_preprocessed)
-        elif best_model_name == "KMeans":
-            model = KMeans(n_clusters=2, random_state=42)
-            model.fit(X_preprocessed)
-            scores = model.predict(X_preprocessed)
-        elif best_model_name == "Local Outlier Factor":
-            model = LocalOutlierFactor(novelty=False, contamination='auto')
-            model.fit(X_preprocessed)
-            scores = model.fit_predict(X_preprocessed)
-        elif best_model_name == "One-Class SVM":
-            model = OneClassSVM(kernel='rbf', nu=0.05)
-            model.fit(X_preprocessed)
-            scores = model.predict(X_preprocessed)
-
-        st.subheader(f"Scoring the Input Data Using {best_model_name}")
-        st.write(scores)
-else:
-    st.info("Please upload a CSV file to proceed.")
+    # Additional details or actions for the best model can be added here
+    if best_model_name == "Isolation Forest":
+        # Add specific actions or details for Isolation Forest
+        pass
+    elif best_model_name == "DBSCAN":
+        # Add specific actions or details for DBSCAN
+        pass
+    elif best_model_name == "HDBSCAN":
+        # Add specific actions or details for HDBSCAN
