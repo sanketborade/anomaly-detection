@@ -83,40 +83,40 @@ if uploaded_file is not None:
     # Calculate accuracy for Isolation Forest with perturbed predictions
     accuracy_iforest = accuracy_score(outlier_preds, outlier_preds_perturbed)
 
-    # Create tabs
-    tab1, tab2 = st.tabs(["Exploratory Data Analysis", "Modeling"])
+    # Display model accuracies
+    st.write("Accuracy for DBSCAN:", accuracy_dbscan)
+    st.write("Accuracy for HDBSCAN:", accuracy_hdbscan)
+    st.write("Accuracy for KMeans:", accuracy_kmeans)
+    st.write("Accuracy for Local Outlier Factor:", accuracy_lof)
+    st.write("Accuracy for One-Class SVM:", accuracy_svm)
+    st.write("Accuracy for Isolation Forest (perturbed):", accuracy_iforest)
 
-    with tab1:
-        st.header("Exploratory Data Analysis")
-        
-        st.subheader("Data Preview")
-        st.write(data.head())
-        
-        st.subheader("Summary Statistics")
-        st.write(data.describe())
-        
-        st.subheader("Missing Values")
-        st.write(data.isnull().sum())
-        
-        st.subheader("Correlation Matrix")
-        correlation_matrix = data.corr()
-        fig, ax = plt.subplots()
-        sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', ax=ax)
-        st.pyplot(fig)
-        
-        st.subheader("Pair Plot")
-        st.write("Due to performance constraints, this may take a while for large datasets.")
-        if st.button("Generate Pair Plot"):
-            fig = sns.pairplot(data)
-            st.pyplot(fig)
+    # Select the model with the highest accuracy for scoring the input data
+    accuracies = {
+        "DBSCAN": accuracy_dbscan,
+        "HDBSCAN": accuracy_hdbscan,
+        "KMeans": accuracy_kmeans,
+        "Local Outlier Factor": accuracy_lof,
+        "One-Class SVM": accuracy_svm,
+        "Isolation Forest (perturbed)": accuracy_iforest
+    }
+    best_model_name = max(accuracies, key=accuracies.get)
 
-    with tab2:
-        st.header("Model Accuracy Score")
-        
-        # Display results
-        st.write("Accuracy for DBSCAN:", accuracy_dbscan)
-        st.write("Accuracy for HDBSCAN:", accuracy_hdbscan)
-        st.write("Accuracy for KMeans:", accuracy_kmeans)
-        st.write("Accuracy for Local Outlier Factor:", accuracy_lof)
-        st.write("Accuracy for One-Class SVM:", accuracy_svm)
-        st.write("Accuracy for Isolation Forest (perturbed):", accuracy_iforest)
+    # Fit and score the best model on the entire dataset
+    st.write(f"Best Model: {best_model_name}")
+    if best_model_name == "DBSCAN":
+        model = dbscan
+    elif best_model_name == "HDBSCAN":
+        model = hdbscan
+    elif best_model_name == "KMeans":
+        model = kmeans
+    elif best_model_name == "Local Outlier Factor":
+        model = lof
+    elif best_model_name == "One-Class SVM":
+        model = svm
+    else:
+        model = iforest
+
+    scores = model.fit_predict(X_preprocessed)
+    st.write("Scores for the entire dataset using the best model:")
+    st.write(scores)
