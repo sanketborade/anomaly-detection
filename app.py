@@ -111,7 +111,7 @@ if uploaded_file is not None:
             st.pyplot(fig)
 
   with tab2:
-    st.header("Model Accuracy Score")
+        st.header("Model Accuracy Score")
     
     # Display results
     st.write("Accuracy for DBSCAN:", accuracy_dbscan)
