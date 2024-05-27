@@ -72,18 +72,18 @@ num_perturbations = int(len(outlier_preds) * perturbation_rate)
 
 # Create a perturbation mask
 np.random.seed(42)
-perturbation_mask = np.random.choice([True, False], size=len(outlier_preds), p=[perturbation_rate, 1 - perturbation_rate])
+perturbation_indices = np.random.choice(len(outlier_preds), size=num_perturbations, replace=False)
 
 # Apply the perturbation
 outlier_preds_perturbed = outlier_preds.copy()
-outlier_preds_perturbed[perturbation_mask] = -outlier_preds[perturbation_mask]
+outlier_preds_perturbed[perturbation_indices] = -outlier_preds[perturbation_indices]
 
 # Calculate accuracy for Isolation Forest with perturbed predictions
-accuracy_iforest = accuracy_score(outlier_preds, outlier_preds_perturbed)
+accuracy_iforest_perturbed = accuracy_score(outlier_preds, outlier_preds_perturbed)
 
 print(f"Accuracy for DBSCAN: {accuracy_dbscan}")
 print(f"Accuracy for HDBSCAN: {accuracy_hdbscan}")
 print(f"Accuracy for KMeans: {accuracy_kmeans}")
 print(f"Accuracy for Local Outlier Factor: {accuracy_lof}")
 print(f"Accuracy for One-Class SVM: {accuracy_svm}")
-print(f"Accuracy for Isolation Forest: {accuracy_iforest}")
+print(f"Accuracy for Isolation Forest (perturbed): {accuracy_iforest_perturbed}")
