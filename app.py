@@ -95,7 +95,7 @@ if uploaded_file is not None:
         st.write("Accuracy for KMeans:", accuracy_kmeans)
         st.write("Accuracy for Local Outlier Factor:", accuracy_lof)
         st.write("Accuracy for One-Class SVM:", accuracy_svm)
-        st.write("Accuracy for Isolation Forest (perturbed):", accuracy_iforest)
+        st.write("Accuracy for Isolation Forest :", accuracy_iforest)
 
     with tab2:
         st.header("Exploratory Data Analysis")
@@ -125,7 +125,7 @@ if uploaded_file is not None:
         st.header("Modeling")
 
         st.subheader("Isolation Forest")
-        st.write("Accuracy for Isolation Forest (perturbed):", accuracy_iforest)
+        st.write("Accuracy for Isolation Forest :", accuracy_iforest)
 
         st.subheader("DBSCAN")
         st.write("Accuracy for DBSCAN:", accuracy_dbscan)
