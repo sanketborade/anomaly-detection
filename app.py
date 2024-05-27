@@ -195,4 +195,4 @@ if uploaded_file is not None:
         st.subheader("Data with Anomaly Labels")
         st.write(data)
 else:
-    st.info("Please upload a CSV file to proceed."
+    st.info("Please upload a CSV file to proceed.")
