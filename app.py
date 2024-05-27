@@ -6,7 +6,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import IsolationForest
 from sklearn.cluster import KMeans
-from sklearn.neighbors import LocalOutlierFactor
 from sklearn.svm import OneClassSVM
 from sklearn.impute import SimpleImputer
 from sklearn.metrics import accuracy_score
@@ -29,7 +28,7 @@ def train_models(X_train, X_test):
     # Define and fit Isolation Forest
     iforest = IsolationForest(n_estimators=50, contamination='auto', random_state=42)
     iforest.fit(X_train)
-    outlier_preds = iforest.predict(X_test)
+    outlier_preds_iforest = iforest.predict(X_test)
 
     # Apply DBSCAN
     dbscan = DBSCAN(eps=0.5, min_samples=5)
@@ -43,23 +42,19 @@ def train_models(X_train, X_test):
     kmeans = KMeans(n_clusters=2, random_state=42)
     predictions_kmeans = kmeans.fit_predict(X_test)
 
-    # Apply Local Outlier Factor (LOF) with novelty=False
-    lof = LocalOutlierFactor(novelty=False, contamination='auto')
-    predictions_lof = lof.fit_predict(X_test)
-
     # Apply One-Class SVM
     svm = OneClassSVM(kernel='rbf', nu=0.05)
     predictions_svm = svm.fit_predict(X_test)
 
-    return iforest, outlier_preds, dbscan, predictions_dbscan, hdbscan, predictions_hdbscan, kmeans, predictions_kmeans, lof, predictions_lof, svm, predictions_svm
+    return iforest, outlier_preds_iforest, dbscan, predictions_dbscan, hdbscan, predictions_hdbscan, kmeans, predictions_kmeans, svm, predictions_svm
 
-def calculate_accuracies(outlier_preds, predictions_dbscan, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm):
-    accuracy_dbscan = accuracy_score(outlier_preds, predictions_dbscan)
-    accuracy_hdbscan = accuracy_score(outlier_preds, predictions_hdbscan)
-    accuracy_kmeans = accuracy_score(outlier_preds, predictions_kmeans)
-    accuracy_lof = accuracy_score(outlier_preds, predictions_lof)
-    accuracy_svm = accuracy_score(outlier_preds, predictions_svm)
-    return accuracy_dbscan, accuracy_hdbscan, accuracy_kmeans, accuracy_lof, accuracy_svm
+def calculate_accuracies(y_test, outlier_preds_iforest, predictions_dbscan, predictions_hdbscan, predictions_kmeans, predictions_svm):
+    accuracy_iforest = accuracy_score(y_test, outlier_preds_iforest)
+    accuracy_dbscan = accuracy_score(y_test, predictions_dbscan)
+    accuracy_hdbscan = accuracy_score(y_test, predictions_hdbscan)
+    accuracy_kmeans = accuracy_score(y_test, predictions_kmeans)
+    accuracy_svm = accuracy_score(y_test, predictions_svm)
+    return accuracy_iforest, accuracy_dbscan, accuracy_hdbscan, accuracy_kmeans, accuracy_svm
 
 # Streamlit App
 st.title('Anomaly Detection')
@@ -72,14 +67,18 @@ if uploaded_file is not None:
     data = load_data(uploaded_file)
     X_preprocessed = preprocess_data(data)
 
+    # Create synthetic outlier labels for evaluation
+    np.random.seed(42)
+    outlier_labels = np.random.choice([1, -1], size=X_preprocessed.shape[0], p=[0.9, 0.1])
+
     # Separate the data into training and testing sets
-    X_train, X_test, _, _ = train_test_split(X_preprocessed, X_preprocessed, test_size=0.3, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X_preprocessed, outlier_labels, test_size=0.3, random_state=42)
 
     # Train models and get predictions
-    iforest, outlier_preds, dbscan, predictions_dbscan, hdbscan, predictions_hdbscan, kmeans, predictions_kmeans, lof, predictions_lof, svm, predictions_svm = train_models(X_train, X_test)
+    iforest, outlier_preds_iforest, dbscan, predictions_dbscan, hdbscan, predictions_hdbscan, kmeans, predictions_kmeans, svm, predictions_svm = train_models(X_train, X_test)
 
     # Calculate accuracies
-    accuracy_dbscan, accuracy_hdbscan, accuracy_kmeans, accuracy_lof, accuracy_svm = calculate_accuracies(outlier_preds, predictions_dbscan, predictions_hdbscan, predictions_kmeans, predictions_lof, predictions_svm)
+    accuracy_iforest, accuracy_dbscan, accuracy_hdbscan, accuracy_kmeans, accuracy_svm = calculate_accuracies(y_test, outlier_preds_iforest, predictions_dbscan, predictions_hdbscan, predictions_kmeans, predictions_svm)
 
     # Exploratory Data Analysis (EDA) tab
     st.header("Exploratory Data Analysis")
@@ -104,18 +103,18 @@ if uploaded_file is not None:
     st.header("Modelling")
     st.subheader("Accuracy of Models")
 
+    st.write(f"Accuracy for Isolation Forest: {accuracy_iforest}")
     st.write(f"Accuracy for DBSCAN: {accuracy_dbscan}")
     st.write(f"Accuracy for HDBSCAN: {accuracy_hdbscan}")
     st.write(f"Accuracy for KMeans: {accuracy_kmeans}")
-    st.write(f"Accuracy for Local Outlier Factor: {accuracy_lof}")
     st.write(f"Accuracy for One-Class SVM: {accuracy_svm}")
 
     # Determine the model with the highest accuracy
     accuracies = {
+        "Isolation Forest": accuracy_iforest,
         "DBSCAN": accuracy_dbscan,
         "HDBSCAN": accuracy_hdbscan,
         "KMeans": accuracy_kmeans,
-        "Local Outlier Factor": accuracy_lof,
         "One-Class SVM": accuracy_svm
     }
 
@@ -126,7 +125,10 @@ if uploaded_file is not None:
     # Retrain the best model on the entire dataset and score it
     st.subheader("Scoring with the Best Model")
 
-    if best_model_name == "DBSCAN":
+    if best_model_name == "Isolation Forest":
+        best_model = iforest.fit(X_preprocessed)
+        scores = best_model.predict(X_preprocessed)
+    elif best_model_name == "DBSCAN":
         best_model = dbscan.fit(X_preprocessed)
         scores = best_model.fit_predict(X_preprocessed)
     elif best_model_name == "HDBSCAN":
@@ -135,9 +137,6 @@ if uploaded_file is not None:
     elif best_model_name == "KMeans":
         best_model = kmeans.fit(X_preprocessed)
         scores = best_model.predict(X_preprocessed)
-    elif best_model_name == "Local Outlier Factor":
-        best_model = lof.fit(X_preprocessed)
-        scores = best_model.fit_predict(X_preprocessed)
     elif best_model_name == "One-Class SVM":
         best_model = svm.fit(X_preprocessed)
         scores = best_model.predict(X_preprocessed)
