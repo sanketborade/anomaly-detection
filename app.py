@@ -43,7 +43,7 @@ if uploaded_file is not None:
     X_train, X_test, _, _ = train_test_split(X_preprocessed, X_preprocessed, test_size=0.3, random_state=42)
 
     # Define and fit Isolation Forest
-    iforest = IsolationForest(n_estimators=50, contamination='auto', random_state=42)
+    iforest = IsolationForest(n_estimators=50, contamination=0.2, random_state=42)
     iforest.fit(X_train)
 
     # Detect outliers using Isolation Forest
@@ -135,6 +135,6 @@ if uploaded_file is not None:
 
         outlier_preds = iforest.predict(X)
         accuracy_iforest = accuracy_score(np.ones_like(outlier_preds), outlier_preds)
-        data['Outliers'] = np.where(outlier_preds == -1, 1, 0)
+        data['Outliers'] = np.where(outlier_preds == -1, 1)
         st.write("Data with Outliers Detected by Isolation Forest:")
         st.write(data)
