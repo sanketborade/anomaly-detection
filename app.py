@@ -136,7 +136,7 @@ if uploaded_file is not None:
         outlier_preds_all = iforest.predict(X)
 
 # Label outliers as 1 and non-outliers as -1
-data['Outlier'] = np.where(outlier_preds_all == -1, 1, -1)
+data['Outlier'] = np.where(outlier_preds_all == -1, 1, -1 )
 
 # Display the updated data with Outlier column
 st.write("Data with Outliers Detected by Isolation Forest:")
