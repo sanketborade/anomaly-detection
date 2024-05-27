@@ -143,7 +143,7 @@ if uploaded_file is not None:
             data['Outliers'] = np.where(predictions_lof == -1, 1, 0)
         elif best_model_name == "One-Class SVM" and len(predictions_svm) == len(data):
             data['Outliers'] == np.where(predictions_lof == -1, 1, 0)
-         elif best_model_name == "Isolation Forest " and len(predictions_svm) == len(data):
+         elif best_model_name == "Isolation Forest " and len(predictions_iforest) == len(data):
             data['Outliers'] == np.where(predictions_lof == -1, 1, 0)
         
 
