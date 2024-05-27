@@ -131,20 +131,4 @@ if uploaded_file is not None:
             "Isolation Forest (perturbed)": accuracy_iforest
         }
         best_model_name = max(accuracies, key=accuracies.get)
-
-        # Add a column of outliers labeled based on the chosen model
-        if best_model_name == "DBSCAN" and len(predictions_dbscan) == len(data):
-            data['Outliers'] = np.where(predictions_dbscan == -1, 1, 0)
-        elif best_model_name == "HDBSCAN" and len(predictions_hdbscan) == len(data):
-            data['Outliers'] = np.where(predictions_hdbscan == -1, 1, 0)
-        elif best_model_name == "KMeans" and len(predictions_kmeans) == len(data):
-            data['Outliers'] = np.where(predictions_kmeans == -1, 1, 0)
-        elif best_model_name == "Local Outlier Factor" and len(predictions_lof) == len(data):
-            data['Outliers'] = np.where(predictions_lof == -1, 1, 0)
-        elif best_model_name == "One-Class SVM" and len(predictions_svm) == len(data):
-            data['Outliers'] == np.where(predictions_lof == -1, 1, 0)
-         elif best_model_name == "Isolation Forest " and len(predictions_iforest) == len(data):
-            data['Outliers'] == np.where(predictions_lof == -1, 1, 0)
-        
-
-
+        st.write(f"Best Model (Highest Accuracy): {best_model_name}")
