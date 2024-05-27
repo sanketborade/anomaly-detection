@@ -84,7 +84,7 @@ if uploaded_file is not None:
     accuracy_iforest = accuracy_score(outlier_preds, outlier_preds_perturbed)
 
     # Create tabs
-    tab1, tab2 = st.tabs(["Exploratory Data Analysis", "Modelling"])
+    tab1, tab2 = st.tabs(["Exploratory Data Analysis", "Modeling"])
 
     with tab1:
         st.header("Exploratory Data Analysis")
@@ -103,7 +103,24 @@ if uploaded_file is not None:
         fig, ax = plt.subplots()
         sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', ax=ax)
         st.pyplot(fig)
-        
+
+        # Distribution of numerical features
+        st.subheader("Feature Distributions")
+        num_cols = data.select_dtypes(include=np.number).columns.tolist()
+        fig, axs = plt.subplots(len(num_cols), 1, figsize=(10, len(num_cols) * 3))
+        for i, col in enumerate(num_cols):
+            sns.histplot(data[col], ax=axs[i], kde=True)
+            axs[i].set_title(f'Distribution of {col}')
+        st.pyplot(fig)
+
+        # Box plots for detecting outliers
+        st.subheader("Box Plots for Outlier Detection")
+        fig, axs = plt.subplots(len(num_cols), 1, figsize=(10, len(num_cols) * 3))
+        for i, col in enumerate(num_cols):
+            sns.boxplot(x=data[col], ax=axs[i])
+            axs[i].set_title(f'Box Plot of {col}')
+        st.pyplot(fig)
+
         st.subheader("Pair Plot")
         st.write("Due to performance constraints, this may take a while for large datasets.")
         if st.button("Generate Pair Plot"):
@@ -120,7 +137,7 @@ if uploaded_file is not None:
         st.write("Accuracy for KMeans:", accuracy_kmeans)
         st.write("Accuracy for Local Outlier Factor:", accuracy_lof)
         st.write("Accuracy for One-Class SVM:", accuracy_svm)
-        st.write("Accuracy for Isolation Forest :", accuracy_iforest)
+        st.write("Accuracy for Isolation Forest (perturbed):", accuracy_iforest)
 
         accuracies = {
             "Isolation Forest": accuracy_iforest,
@@ -178,4 +195,4 @@ if uploaded_file is not None:
         st.subheader("Data with Anomaly Labels")
         st.write(data)
 else:
-    st.info("Please upload a CSV file to proceed.")
+    st.info("Please upload a CSV file to proceed."
