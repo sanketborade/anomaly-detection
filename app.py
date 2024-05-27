@@ -84,9 +84,20 @@ if uploaded_file is not None:
     accuracy_iforest = accuracy_score(outlier_preds, outlier_preds_perturbed)
 
     # Create tabs
-    tab1, tab2 = st.tabs(["Exploratory Data Analysis", "Modeling"])
+    tab1, tab2, tab3 = st.tabs(["Outlier Detection", "Exploratory Data Analysis", "Modeling"])
 
     with tab1:
+        st.header("Outlier Detection Model Accuracy")
+        
+        # Display results
+        st.write("Accuracy for DBSCAN:", accuracy_dbscan)
+        st.write("Accuracy for HDBSCAN:", accuracy_hdbscan)
+        st.write("Accuracy for KMeans:", accuracy_kmeans)
+        st.write("Accuracy for Local Outlier Factor:", accuracy_lof)
+        st.write("Accuracy for One-Class SVM:", accuracy_svm)
+        st.write("Accuracy for Isolation Forest (perturbed):", accuracy_iforest)
+
+    with tab2:
         st.header("Exploratory Data Analysis")
         
         st.subheader("Data Preview")
@@ -110,9 +121,25 @@ if uploaded_file is not None:
             fig = sns.pairplot(data)
             st.pyplot(fig)
 
-    with tab2:
+    with tab3:
         st.header("Modeling")
 
-        accuracies = {
-            "Isolation Forest": accuracy_iforest,
-           
+        st.subheader("Isolation Forest")
+        st.write("Accuracy for Isolation Forest (perturbed):", accuracy_iforest)
+
+        st.subheader("DBSCAN")
+        st.write("Accuracy for DBSCAN:", accuracy_dbscan)
+
+        st.subheader("HDBSCAN")
+        st.write("Accuracy for HDBSCAN:", accuracy_hdbscan)
+
+        st.subheader("KMeans")
+        st.write("Accuracy for KMeans:", accuracy_kmeans)
+
+        st.subheader("Local Outlier Factor")
+        st.write("Accuracy for Local Outlier Factor:", accuracy_lof)
+
+        st.subheader("One-Class SVM")
+        st.write("Accuracy for One-Class SVM:", accuracy_svm)
+else:
+    st.info("Please upload a CSV file to proceed.")
