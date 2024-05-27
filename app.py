@@ -84,7 +84,7 @@ if uploaded_file is not None:
     accuracy_iforest = accuracy_score(outlier_preds, outlier_preds_perturbed)
 
     # Create tabs
-    tab1, tab2 = st.tabs(["Exploratory Data Analysis", "Outlier Detection"])
+    tab1, tab2 = st.tabs(["Exploratory Data Analysis", "Modeling"])
 
     with tab1:
         st.header("Exploratory Data Analysis")
@@ -111,7 +111,7 @@ if uploaded_file is not None:
             st.pyplot(fig)
 
     with tab2:
-        st.header("Modelling")
+        st.header("Modeling")
         
         # Display results
         st.write("Accuracy for DBSCAN:", accuracy_dbscan)
