@@ -84,7 +84,7 @@ if uploaded_file is not None:
     accuracy_iforest = accuracy_score(outlier_preds, outlier_preds_perturbed)
 
     # Create tabs
-    tab1, tab2, tab3 = st.tabs(["Exploratory Data Analysis", "Outlier Detection", "Modeling"])
+    tab1, tab2 = st.tabs(["Exploratory Data Analysis", "Outlier Detection"])
 
     with tab1:
         st.header("Exploratory Data Analysis")
@@ -120,44 +120,3 @@ if uploaded_file is not None:
         st.write("Accuracy for Local Outlier Factor:", accuracy_lof)
         st.write("Accuracy for One-Class SVM:", accuracy_svm)
         st.write("Accuracy for Isolation Forest (perturbed):", accuracy_iforest)
-
-    with tab3:
-        st.header("Modeling")
-
-        accuracies = {
-            "Isolation Forest": accuracy_iforest,
-            "DBSCAN": accuracy_dbscan,
-            "HDBSCAN": accuracy_hdbscan,
-            "KMeans": accuracy_kmeans,
-            "Local Outlier Factor": accuracy_lof,
-            "One-Class SVM": accuracy_svm
-        }
-
-        best_model_name = max(accuracies, key=accuracies.get)
-        st.subheader(f"Best Model: {best_model_name}")
-        st.write(f"Accuracy: {accuracies[best_model_name]}")
-
-        # Fit the best model on the entire dataset and score the data
-        if best_model_name == "Isolation Forest":
-            model = iforest
-            scores = model.decision_function(X_preprocessed)
-        elif best_model_name == "DBSCAN":
-            model = DBSCAN(eps=0.5, min_samples=5)
-            model.fit(X_preprocessed)
-            scores = model.fit_predict(X_preprocessed)
-        elif best_model_name == "HDBSCAN":
-            model = HDBSCAN(min_cluster_size=5)
-            model.fit(X_preprocessed)
-            scores = model.fit_predict(X_preprocessed)
-        elif best_model_name == "KMeans":
-            model = KMeans(n_clusters=2, random_state=42)
-            model.fit(X_preprocessed)
-            scores = model.predict(X_preprocessed)
-        elif best_model_name == "Local Outlier Factor":
-            model = LocalOutlierFactor(novelty=False, contamination='auto')
-            model.fit(X_preprocessed)
-            scores = model.fit_predict(X_preprocessed)
-        elif best_model_name == "One-Class SVM":
-            model = OneClassSVM(kernel='rbf', nu=0.05)
-            model.fit(X_preprocessed)
-            scores = model.predict(X_preprocessed)
