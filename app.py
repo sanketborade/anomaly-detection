@@ -111,7 +111,7 @@ if uploaded_file is not None:
             st.pyplot(fig)
 
     with tab2:
-        st.header("Outlier Detection Model Accuracy")
+        st.header("Modelling")
         
         # Display results
         st.write("Accuracy for DBSCAN:", accuracy_dbscan)
