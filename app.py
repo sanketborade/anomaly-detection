@@ -1,8 +1,6 @@
 import pandas as pd
 import numpy as np
 import streamlit as st
-import seaborn as sns
-import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import IsolationForest
@@ -34,10 +32,6 @@ if uploaded_file is not None:
     # Fit preprocessing on the data
     X = data_imputed.drop(columns=['Outlier']) if 'Outlier' in data_imputed.columns else data_imputed
     X_preprocessed = preprocessor.fit_transform(X)
-
-    # Modify the dataset (e.g., shuffling the data)
-    np.random.seed(42)  # Fix the random seed for reproducibility
-    np.random.shuffle(X_preprocessed)
 
     # Separate the data into training and testing sets
     X_train, X_test, _, _ = train_test_split(X_preprocessed, X_preprocessed, test_size=0.3, random_state=42)
@@ -76,70 +70,38 @@ if uploaded_file is not None:
     accuracy_lof = accuracy_score(outlier_preds, predictions_lof)
     accuracy_svm = accuracy_score(outlier_preds, predictions_svm)
 
-    # Introduce perturbation to reduce the accuracy of the Isolation Forest
-    perturbation = np.random.choice([1, -1], size=outlier_preds.shape, p=[0.05, 0.95])
-    outlier_preds_perturbed = np.where(perturbation == 1, -outlier_preds, outlier_preds)
+    # Create a dictionary to store accuracies
+    accuracies = {
+        "DBSCAN": accuracy_dbscan,
+        "HDBSCAN": accuracy_hdbscan,
+        "KMeans": accuracy_kmeans,
+        "Local Outlier Factor": accuracy_lof,
+        "One-Class SVM": accuracy_svm
+    }
 
-    # Calculate accuracy for Isolation Forest with perturbed predictions
-    accuracy_iforest = accuracy_score(outlier_preds, outlier_preds_perturbed)
+    # Select the model with the highest accuracy
+    best_model = max(accuracies, key=accuracies.get)
+    best_accuracy = accuracies[best_model]
 
-    # Create tabs
-    tab1, tab2, tab3 = st.tabs(["Outlier Detection", "Exploratory Data Analysis", "Modeling"])
+    # Label the scores as 1 and -1 based on the best model
+    if best_model == "DBSCAN":
+        scores = predictions_dbscan
+    elif best_model == "HDBSCAN":
+        scores = predictions_hdbscan
+    elif best_model == "KMeans":
+        scores = predictions_kmeans
+    elif best_model == "Local Outlier Factor":
+        scores = predictions_lof
+    elif best_model == "One-Class SVM":
+        scores = predictions_svm
 
-    with tab1:
-        st.header("Outlier Detection Model Accuracy")
-        
-        # Display results
-        st.write("Accuracy for DBSCAN:", accuracy_dbscan)
-        st.write("Accuracy for HDBSCAN:", accuracy_hdbscan)
-        st.write("Accuracy for KMeans:", accuracy_kmeans)
-        st.write("Accuracy for Local Outlier Factor:", accuracy_lof)
-        st.write("Accuracy for One-Class SVM:", accuracy_svm)
-        st.write("Accuracy for Isolation Forest :", accuracy_iforest)
+    # Labeling scores as 1 and -1
+    labels = np.where(scores == -1, -1, 1)
 
-    with tab2:
-        st.header("Exploratory Data Analysis")
-        
-        st.subheader("Data Preview")
-        st.write(data.head())
-        
-        st.subheader("Summary Statistics")
-        st.write(data.describe())
-        
-        st.subheader("Missing Values")
-        st.write(data.isnull().sum())
-        
-        st.subheader("Correlation Matrix")
-        correlation_matrix = data.corr()
-        fig, ax = plt.subplots()
-        sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', ax=ax)
-        st.pyplot(fig)
-        
-        st.subheader("Pair Plot")
-        st.write("Due to performance constraints, this may take a while for large datasets.")
-        if st.button("Generate Pair Plot"):
-            fig = sns.pairplot(data)
-            st.pyplot(fig)
+    # Display the best model and accuracy
+    st.write(f"Best Model: {best_model}")
+    st.write(f"Accuracy: {best_accuracy}")
 
-    with tab3:
-        st.header("Modeling")
-
-        st.subheader("Isolation Forest")
-        st.write("Accuracy for Isolation Forest :", accuracy_iforest)
-
-        st.subheader("DBSCAN")
-        st.write("Accuracy for DBSCAN:", accuracy_dbscan)
-
-        st.subheader("HDBSCAN")
-        st.write("Accuracy for HDBSCAN:", accuracy_hdbscan)
-
-        st.subheader("KMeans")
-        st.write("Accuracy for KMeans:", accuracy_kmeans)
-
-        st.subheader("Local Outlier Factor")
-        st.write("Accuracy for Local Outlier Factor:", accuracy_lof)
-
-        st.subheader("One-Class SVM")
-        st.write("Accuracy for One-Class SVM:", accuracy_svm)
-else:
-    st.info("Please upload a CSV file to proceed.")
+    # Display the labeled scores
+    st.write("Labeled Scores:")
+    st.write(labels)
