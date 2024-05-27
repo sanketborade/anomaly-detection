@@ -110,8 +110,10 @@ if uploaded_file is not None:
             fig = sns.pairplot(data)
             st.pyplot(fig)
 
+
+
   with tab2:
-        st.header("Model Accuracy Score")
+    st.header("Model Accuracy Score")
     
     # Display results
     st.write("Accuracy for DBSCAN:", accuracy_dbscan)
@@ -150,3 +152,6 @@ if uploaded_file is not None:
     # Display the modified DataFrame with the "Outlier" column
     st.subheader("Data with Outlier Column")
     st.write(data.head())
+
+
+
