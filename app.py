@@ -141,20 +141,17 @@ if uploaded_file is not None:
         if best_model_name == "Isolation Forest":
             model = iforest
             scores = model.decision_function(X_preprocessed)
-            labels = model.predict(X_preprocessed)
+            labels = np.where(scores < 0, -1, 1)  # Score-based labeling
         elif best_model_name == "DBSCAN":
             model = DBSCAN(eps=0.5, min_samples=5)
             labels = model.fit_predict(X_preprocessed)
-            scores = np.ones_like(labels)  # DBSCAN does not have a scoring function
+            labels = np.where(labels == -1, -1, 1)  # DBSCAN labels outliers as -1
         elif best_model_name == "HDBSCAN":
             model = HDBSCAN(min_cluster_size=5)
             labels = model.fit_predict(X_preprocessed)
             scores = model.outlier_scores_
+            labels = np.where(scores < 0, -1, 1)  # Score-based labeling
         elif best_model_name == "KMeans":
             model = KMeans(n_clusters=2, random_state=42)
             labels = model.predict(X_preprocessed)
-            scores = -model.transform(X_preprocessed).min(axis=1)  # Inverse distance to cluster center
-        elif best_model_name == "Local Outlier Factor":
-            model = LocalOutlierFactor(novelty=False, contamination='auto')
-            labels = model.fit_predict(X_preprocessed)
-            scores = -model.negative_outlier_factor_  # LOF uses negative outlier
+            labels = np.where(labels == 0, -1, 1)  # KMeans clusters as 
