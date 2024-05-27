@@ -125,7 +125,7 @@ if uploaded_file is not None:
         st.header("Modeling")
 
         st.subheader("Isolation Forest")
-        st.write("Accuracy for Isolation Forest (perturbed):", accuracy_iforest)
+        st.write("Accuracy for Isolation Forest :", accuracy_iforest)
 
         st.subheader("DBSCAN")
         st.write("Accuracy for DBSCAN:", accuracy_dbscan)
