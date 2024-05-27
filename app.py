@@ -83,63 +83,33 @@ if uploaded_file is not None:
     # Calculate accuracy for Isolation Forest with perturbed predictions
     accuracy_iforest = accuracy_score(outlier_preds, outlier_preds_perturbed)
 
-    # Create tabs
-    tab1, tab2 = st.tabs(["Exploratory Data Analysis", "Modeling"])
+    # Select the model with the highest accuracy
+    models = {
+        "DBSCAN": accuracy_dbscan,
+        "HDBSCAN": accuracy_hdbscan,
+        "KMeans": accuracy_kmeans,
+        "Local Outlier Factor": accuracy_lof,
+        "One-Class SVM": accuracy_svm,
+        "Isolation Forest (perturbed)": accuracy_iforest
+    }
+    best_model_name = max(models, key=models.get)
 
-    with tab1:
-        st.header("Exploratory Data Analysis")
-        
-        st.subheader("Data Preview")
-        st.write(data.head())
-        
-        st.subheader("Summary Statistics")
-        st.write(data.describe())
-        
-        st.subheader("Missing Values")
-        st.write(data.isnull().sum())
-        
-        st.subheader("Correlation Matrix")
-        correlation_matrix = data.corr()
-        fig, ax = plt.subplots()
-        sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', ax=ax)
-        st.pyplot(fig)
-        
-        st.subheader("Pair Plot")
-        st.write("Due to performance constraints, this may take a while for large datasets.")
-        if st.button("Generate Pair Plot"):
-            fig = sns.pairplot(data)
-            st.pyplot(fig)
+    # Add a column of outliers labeled based on the chosen model
+    if best_model_name == "DBSCAN" and len(predictions_dbscan) == len(data):
+        data['Outliers'] = np.where(predictions_dbscan == -1, 1, 0)
+    elif best_model_name == "HDBSCAN" and len(predictions_hdbscan) == len(data):
+        data['Outliers'] = np.where(predictions_hdbscan == -1, 1, 0)
+    elif best_model_name == "KMeans" and len(predictions_kmeans) == len(data):
+        data['Outliers'] = np.where(predictions_kmeans == -1, 1, 0)
+    elif best_model_name == "Local Outlier Factor" and len(predictions_lof) == len(data):
+        data['Outliers'] = np.where(predictions_lof == -1, 1, 0)
+    elif best_model_name == "One-Class SVM" and len(predictions_svm) == len(data):
+        data['Outliers'] = np.where(predictions_lof == -1, 1, 0) 
 
-    with tab2:
-        st.header("Model Accuracy Score")
-        
-        # Display results
-        st.write("Accuracy for DBSCAN:", accuracy_dbscan)
-        st.write("Accuracy for HDBSCAN:", accuracy_hdbscan)
-        st.write("Accuracy for KMeans:", accuracy_kmeans)
-        st.write("Accuracy for Local Outlier Factor:", accuracy_lof)
-        st.write("Accuracy for One-Class SVM:", accuracy_svm)
-        st.write("Accuracy for Isolation Forest (perturbed):", accuracy_iforest)
+    # Display the best model's name and accuracy
+    st.write("Best Model:", best_model_name)
+    st.write("Accuracy of Best Model:", models[best_model_name])
 
-        # Select the best model
-        accuracies = {
-            "DBSCAN": accuracy_dbscan,
-            "HDBSCAN": accuracy_hdbscan,
-            "KMeans": accuracy_kmeans,
-            "Local Outlier Factor": accuracy_lof,
-            "One-Class SVM": accuracy_svm,
-            "Isolation Forest (perturbed)": accuracy_iforest
-        }
-        best_model_name = max(accuracies, key=accuracies.get)
-
-        # Add a column of outliers labeled based on the chosen model
-        if best_model_name == "DBSCAN" and len(predictions_dbscan) == len(data):
-            data['Outliers'] = np.where(predictions_dbscan == -1, 1, 0)
-        elif best_model_name == "HDBSCAN" and len(predictions_hdbscan) == len(data):
-            data['Outliers'] = np.where(predictions_hdbscan == -1, 1, 0)
-        elif best_model_name == "KMeans" and len(predictions_kmeans) == len(data):
-            data['Outliers'] = np.where(predictions_kmeans == -1, 1, 0)
-        elif best_model_name == "Local Outlier Factor" and len(predictions_lof) == len(data):
-            data['Outliers'] = np.where(predictions_lof == -1, 1, 0)
-        elif best_model_name == "One-Class SVM" and len(predictions_svm) == len(data):
-            data['Outliers'] = np.where(predictions_lof == -1, 1, 0)
+    # Display the data with the added column of outliers
+    st.subheader("Data with Outliers Column Added")
+    st.write(data.head())
