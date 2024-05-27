@@ -76,7 +76,7 @@ perturbation_indices = np.random.choice(len(outlier_preds), size=num_perturbatio
 
 # Apply the perturbation
 outlier_preds_perturbed = outlier_preds.copy()
-outlier_preds_perturbed[perturbation_indices] = -outlier_preds[perturbation_indices]
+outlier_preds_perturbed[perturbation_indices] = -outlier_preds_perturbed[perturbation_indices]
 
 # Calculate accuracy for Isolation Forest with perturbed predictions
 accuracy_iforest_perturbed = accuracy_score(outlier_preds, outlier_preds_perturbed)
