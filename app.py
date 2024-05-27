@@ -160,4 +160,4 @@ if uploaded_file is not None:
         elif best_model_name == "One-Class SVM":
             model = OneClassSVM(kernel='rbf', nu=0.05)
             model.fit(X_preprocessed)
-            scores = model.predict(X
+            scores = model.predict(X_preprocessed)
