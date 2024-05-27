@@ -108,3 +108,15 @@ if uploaded_file is not None:
         pass
     elif best_model_name == "HDBSCAN":
         # Add specific actions or details for HDBSCAN
+        pass
+    elif best_model_name == "KMeans":
+        # Add specific actions or details for KMeans
+        pass
+    elif best_model_name == "Local Outlier Factor":
+        # Add specific actions or details for Local Outlier Factor
+        pass
+    elif best_model_name == "One-Class SVM":
+        # Add specific actions or details for One-Class SVM
+        pass
+else:
+    st.info("Please upload a CSV file to proceed.")
