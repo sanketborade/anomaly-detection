@@ -84,7 +84,7 @@ if uploaded_file is not None:
     accuracy_iforest = accuracy_score(outlier_preds, outlier_preds_perturbed)
 
     # Create tabs
-    tab1, tab2 = st.tabs(["Exploratory Data Analysis", "Scoring"])
+    tab1, tab2 = st.tabs(["Exploratory Data Analysis", "Modeling"])
 
     with tab1:
         st.header("Exploratory Data Analysis")
@@ -111,7 +111,7 @@ if uploaded_file is not None:
             st.pyplot(fig)
 
     with tab2:
-        st.header("Scoring")
+        st.header("Modeling")
 
         accuracies = {
             "Isolation Forest": accuracy_iforest,
@@ -122,9 +122,6 @@ if uploaded_file is not None:
             "One-Class SVM": accuracy_svm
         }
 
-        best_model_name = max(accuracies, key=accuracies.get)
-        st.subheader(f"Best Model: {best_model_name}")
-        st.write(f"Accuracy: {accuracies[best_model_name]}")
+        st.subheader("Model Accuracy")
 
-        # Fit the best model on the entire dataset and score the data
-        if best_model_name ==
+       
