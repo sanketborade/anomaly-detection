@@ -1,4 +1,3 @@
-
 import pandas as pd
 import numpy as np
 import streamlit as st
@@ -134,10 +133,12 @@ if uploaded_file is not None:
         best_model_name = max(accuracies, key=accuracies.get)
         st.write(f"Best Model (Highest Accuracy): {best_model_name}")
 
-        outlier_preds = iforest.predict(X)
-        accuracy_iforest = accuracy_score(np.ones_like(outlier_preds), outlier_preds)
-        data['Outliers'] = np.where(outlier_preds == -1, 1, 0)
-        st.write("Data with Outliers Detected by Isolation Forest:")
-        st.write(data)
+        outlier_preds_all = iforest.predict(X)
 
+# Label outliers as 1 and non-outliers as -1
+data['Outlier'] = np.where(outlier_preds_all == -1, 1, -1)
+
+# Display the updated data with Outlier column
+st.write("Data with Outliers Detected by Isolation Forest:")
+st.write(data)
 
