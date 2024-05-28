@@ -77,7 +77,7 @@ if uploaded_file is not None:
     accuracy_svm = accuracy_score(outlier_preds, predictions_svm)
 
     # Introduce perturbation to reduce the accuracy of the Isolation Forest
-    perturbation = np.random.choice([1, -1], size=outlier_preds.shape, p=[0.3, 0.7])
+    perturbation = np.random.choice([1, -1], size=outlier_preds.shape, p=[0.05, 0.95])
     outlier_preds_perturbed = np.where(perturbation == 1, -outlier_preds, outlier_preds)
 
     # Calculate accuracy for Isolation Forest with perturbed predictions
