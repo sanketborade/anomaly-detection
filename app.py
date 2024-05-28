@@ -104,23 +104,6 @@ if uploaded_file is not None:
         sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', ax=ax)
         st.pyplot(fig)
 
-        # Distribution of numerical features
-        st.subheader("Feature Distributions")
-        num_cols = data.select_dtypes(include=np.number).columns.tolist()
-        fig, axs = plt.subplots(len(num_cols), 1, figsize=(10, len(num_cols) * 3))
-        for i, col in enumerate(num_cols):
-            sns.histplot(data[col], ax=axs[i], kde=True)
-            axs[i].set_title(f'Distribution of {col}')
-        st.pyplot(fig)
-
-        # Box plots for detecting outliers
-        st.subheader("Box Plots for Outlier Detection")
-        fig, axs = plt.subplots(len(num_cols), 1, figsize=(10, len(num_cols) * 3))
-        for i, col in enumerate(num_cols):
-            sns.boxplot(x=data[col], ax=axs[i])
-            axs[i].set_title(f'Box Plot of {col}')
-        st.pyplot(fig)
-
         st.subheader("Pair Plot")
         st.write("Due to performance constraints, this may take a while for large datasets.")
         if st.button("Generate Pair Plot"):
