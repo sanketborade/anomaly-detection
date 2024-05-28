@@ -84,7 +84,7 @@ if uploaded_file is not None:
     accuracy_iforest = accuracy_score(outlier_preds, outlier_preds_perturbed)
 
     # Create tabs
-    tab1, tab2 = st.tabs(["Exploratory Data Analysis", "Modeling"])
+    tab1, tab2 = st.tabs(["Exploratory Data Analysis", "Modelling"])
 
     with tab1:
         st.header("Exploratory Data Analysis")
