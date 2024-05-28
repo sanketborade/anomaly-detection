@@ -114,7 +114,6 @@ if uploaded_file is not None:
         st.header("Model Accuracy")
 
         # Display results
-        st.subheader("Outlier Detection Model Accuracy")
         st.write("Accuracy for DBSCAN:", accuracy_dbscan)
         st.write("Accuracy for HDBSCAN:", accuracy_hdbscan)
         st.write("Accuracy for KMeans:", accuracy_kmeans)
