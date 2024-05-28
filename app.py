@@ -128,7 +128,7 @@ if uploaded_file is not None:
             st.pyplot(fig)
 
     with tab2:
-        st.header("Modeling and Outlier Detection Model Accuracy")
+        st.header("Model Accuracy")
 
         # Display results
         st.subheader("Outlier Detection Model Accuracy")
