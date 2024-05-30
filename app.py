@@ -111,7 +111,6 @@ if uploaded_file is not None:
             fig = sns.pairplot(data)
             st.pyplot(fig)
 
-       
     with tab3:
         st.header("Model Accuracy")
 
@@ -164,7 +163,6 @@ if uploaded_file is not None:
             scores = model.decision_function(X_preprocessed)
 
         # Convert labels to -1 for outliers and 1 for normal points
-       # Convert labels to -1 for outliers and 1 for normal points
         if best_model_name in ["Isolation Forest", "One-Class SVM"]:
             labels = np.where(labels == 1, 1, -1)
         else:
@@ -179,5 +177,11 @@ if uploaded_file is not None:
 
         st.subheader("Data with Anomaly Labels")
         st.write(data)
+
+        # Count the occurrences of -1 and 1 in the Anomaly_Label column
+        count_anomalies = data['Anomaly_Label'].value_counts()
+        st.subheader("Anomaly Label Counts")
+        st.write(f"Count of -1 (Outliers): {count_anomalies.get(-1, 0)}")
+        st.write(f"Count of 1 (Normal): {count_anomalies.get(1, 0)}")
 else:
     st.info("Please upload a CSV file to proceed.")
