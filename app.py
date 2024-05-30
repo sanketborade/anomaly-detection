@@ -5,20 +5,20 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.ensemble import IsolationForest
+from sklearn.ensemble import IsolationForest, RandomForestClassifier
 from sklearn.cluster import KMeans
 from sklearn.neighbors import LocalOutlierFactor
-from sklearn.svm import OneClassSVM
+from sklearn.svm import OneClassSVM, SVC
 from sklearn.impute import SimpleImputer
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from hdbscan import HDBSCAN
 from sklearn.cluster import DBSCAN
 
 # Streamlit interface
-st.title("Anomaly Detection")
+st.title("Anomaly Detection and Predictive Modelling")
 
 # Create tabs
-tab1, tab2, tab3 = st.tabs(["Upload File", "Exploratory Data Analysis", "Modelling"])
+tab1, tab2, tab3, tab4 = st.tabs(["Upload File", "Exploratory Data Analysis", "Anomaly Detection", "Predictive Modelling"])
 
 with tab1:
     st.header("Upload CSV File")
@@ -119,7 +119,7 @@ if uploaded_file is not None:
             st.pyplot(fig)
 
     with tab3:
-        st.header("Model Accuracy")
+        st.header("Anomaly Detection")
 
         # Display results
         st.write("Accuracy for DBSCAN:", accuracy_dbscan)
@@ -190,5 +190,53 @@ if uploaded_file is not None:
         st.subheader("Anomaly Label Counts")
         st.write(f"Count of -1 (Outliers): {count_anomalies.get(-1, 0)}")
         st.write(f"Count of 1 (Normal): {count_anomalies.get(1, 0)}")
+
+    with tab4:
+        st.header("Predictive Modelling")
+
+        # Prepare data for predictive modeling
+        features = data.drop(columns=['Anomaly_Label'])
+        target = data['Anomaly_Label']
+
+        # Split the data into training and testing sets
+        X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.3, random_state=42)
+
+        # Train a Random Forest Classifier
+        rf_model = RandomForestClassifier(n_estimators=100, random_state=42)
+        rf_model.fit(X_train, y_train)
+
+        # Make predictions
+        y_pred = rf_model.predict(X_test)
+
+        # Calculate evaluation metrics
+        accuracy = accuracy_score(y_test, y_pred)
+        precision = precision_score(y_test, y_pred, pos_label=-1)
+        recall = recall_score(y_test, y_pred, pos_label=-1)
+        f1 = f1_score(y_test, y_pred, pos_label=-1)
+
+        st.subheader("Random Forest Classifier Results")
+        st.write(f"Accuracy: {accuracy}")
+        st.write(f"Precision: {precision}")
+        st.write(f"Recall: {recall}")
+        st.write(f"F1-Score: {f1}")
+
+        # Train a Support Vector Classifier
+        svc_model = SVC(kernel='rbf', random_state=42)
+        svc_model.fit(X_train, y_train)
+
+        # Make predictions
+        y_pred_svc = svc_model.predict(X_test)
+
+        # Calculate evaluation metrics
+        accuracy_svc = accuracy_score(y_test, y_pred_svc)
+        precision_svc = precision_score(y_test, y_pred_svc, pos_label=-1)
+        recall_svc = recall_score(y_test, y_pred_svc, pos_label=-1)
+        f1_svc = f1_score(y_test, y_pred_svc, pos_label=-1)
+
+        st.subheader("Support Vector Classifier Results")
+        st.write(f"Accuracy: {accuracy_svc}")
+        st.write(f"Precision: {precision_svc}")
+        st.write(f"Recall: {recall_svc}")
+        st.write(f"F1-Score: {f1_svc}")
 else:
     st.info("Please upload a CSV file to proceed.")
