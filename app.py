@@ -17,8 +17,12 @@ from sklearn.cluster import DBSCAN
 # Streamlit interface
 st.title("Anomaly Detection")
 
-# Upload CSV file
-uploaded_file = st.file_uploader("Upload your input CSV file", type=["csv"])
+# Create tabs
+tab1, tab2, tab3 = st.tabs(["Upload File", "Exploratory Data Analysis", "Modelling"])
+
+with tab1:
+    st.header("Upload CSV File")
+    uploaded_file = st.file_uploader("Upload your input CSV file", type=["csv"])
 
 if uploaded_file is not None:
     # Load the data
@@ -83,10 +87,7 @@ if uploaded_file is not None:
     # Calculate accuracy for Isolation Forest with perturbed predictions
     accuracy_iforest = accuracy_score(outlier_preds, outlier_preds_perturbed)
 
-    # Create tabs
-    tab1, tab2 = st.tabs(["Exploratory Data Analysis", "Modelling"])
-
-    with tab1:
+    with tab2:
         st.header("Exploratory Data Analysis")
         
         st.subheader("Data Preview")
@@ -110,7 +111,7 @@ if uploaded_file is not None:
             fig = sns.pairplot(data)
             st.pyplot(fig)
 
-    with tab2:
+    with tab3:
         st.header("Model Accuracy")
 
         # Display results
@@ -119,7 +120,7 @@ if uploaded_file is not None:
         st.write("Accuracy for KMeans:", accuracy_kmeans)
         st.write("Accuracy for Local Outlier Factor:", accuracy_lof)
         st.write("Accuracy for One-Class SVM:", accuracy_svm)
-        st.write("Accuracy for Isolation Forest :", accuracy_iforest)
+        st.write("Accuracy for Isolation Forest:", accuracy_iforest)
 
         accuracies = {
             "Isolation Forest": accuracy_iforest,
