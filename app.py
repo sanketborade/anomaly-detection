@@ -102,9 +102,15 @@ if uploaded_file is not None:
         
         st.subheader("Correlation Matrix")
         correlation_matrix = data.corr()
+        
+        # Display correlation matrix as a heatmap
         fig, ax = plt.subplots()
         sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', ax=ax)
         st.pyplot(fig)
+        
+        # Display correlation matrix as a table
+        st.write("Correlation Matrix Values:")
+        st.write(correlation_matrix)
 
         st.subheader("Pair Plot")
         st.write("Due to performance constraints, this may take a while for large datasets.")
