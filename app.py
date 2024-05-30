@@ -111,6 +111,29 @@ if uploaded_file is not None:
             fig = sns.pairplot(data)
             st.pyplot(fig)
 
+        # Histograms for each column
+        st.subheader("Histograms")
+        for column in data.columns:
+            fig, ax = plt.subplots()
+            sns.histplot(data[column], kde=True, ax=ax)
+            ax.set_title(f'Histogram of {column}')
+            st.pyplot(fig)
+
+        # Box plots for each column
+        st.subheader("Box Plots")
+        for column in data.columns:
+            fig, ax = plt.subplots()
+            sns.boxplot(x=data[column], ax=ax)
+            ax.set_title(f'Box Plot of {column}')
+            st.pyplot(fig)
+
+        # Value counts for categorical variables (if any)
+        st.subheader("Value Counts for Categorical Variables")
+        categorical_columns = data.select_dtypes(include=['object']).columns
+        for column in categorical_columns:
+            st.write(f'Value counts for {column}:')
+            st.write(data[column].value_counts())
+
     with tab3:
         st.header("Model Accuracy")
 
@@ -163,19 +186,4 @@ if uploaded_file is not None:
             scores = model.decision_function(X_preprocessed)
 
         # Convert labels to -1 for outliers and 1 for normal points
-        if best_model_name in ["Isolation Forest", "One-Class SVM"]:
-            labels = np.where(labels == 1, 1, -1)
-        else:
-            labels = np.where(labels == -1, -1, 1)
-
-        # Add scores and labels to the original data
-        data['Score'] = scores
-        data['Anomaly_Label'] = labels
-
-        st.subheader(f"Scoring the Input Data Using {best_model_name}")
-        st.write(data[['Score', 'Anomaly_Label']])
-
-        st.subheader("Data with Anomaly Labels")
-        st.write(data)
-else:
-    st.info("Please upload a CSV file to proceed.")
+        if best_model_name in ["Isolation Forest", "One-Class S
