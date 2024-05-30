@@ -94,7 +94,8 @@ if uploaded_file is not None:
         st.write(data.head())
         
         st.subheader("Summary Statistics")
-        st.write(data.describe())
+        summary_stats = data.describe().T  # Transpose the summary statistics
+        st.write(summary_stats)
         
         st.subheader("Missing Values")
         st.write(data.isnull().sum())
