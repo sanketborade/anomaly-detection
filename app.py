@@ -186,4 +186,20 @@ if uploaded_file is not None:
             scores = model.decision_function(X_preprocessed)
 
         # Convert labels to -1 for outliers and 1 for normal points
-        if best_model_name in ["Isolation Forest", "One-Class S
+       # Convert labels to -1 for outliers and 1 for normal points
+        if best_model_name in ["Isolation Forest", "One-Class SVM"]:
+            labels = np.where(labels == 1, 1, -1)
+        else:
+            labels = np.where(labels == -1, -1, 1)
+
+        # Add scores and labels to the original data
+        data['Score'] = scores
+        data['Anomaly_Label'] = labels
+
+        st.subheader(f"Scoring the Input Data Using {best_model_name}")
+        st.write(data[['Score', 'Anomaly_Label']])
+
+        st.subheader("Data with Anomaly Labels")
+        st.write(data)
+else:
+    st.info("Please upload a CSV file to proceed.")
