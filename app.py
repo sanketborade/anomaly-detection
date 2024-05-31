@@ -1,12 +1,12 @@
-import os
 import pandas as pd
 import numpy as np
 import streamlit as st
+import seaborn as sns
+import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import classification_report, accuracy_score
-from sklearn.model_selection import train_test_split
-from joblib import dump, load
+from joblib import load
 
 st.title("Anomaly Detection Predictive Model")
 
@@ -30,24 +30,11 @@ if uploaded_file is not None:
     X_scaled = scaler.fit_transform(X)
 
     # Train-test split
+    from sklearn.model_selection import train_test_split
     X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.3, random_state=42)
 
-    # Check if the model file exists
-    model_path = 'models/best_model.pkl'
-    if not os.path.exists('models'):
-        os.makedirs('models')
-        
-    if os.path.exists(model_path):
-        # Load the trained model
-        model = load(model_path)
-    else:
-        # Train a new model
-        model = GradientBoostingClassifier(random_state=42)
-        model.fit(X_train, y_train)
-        
-        # Save the model
-        dump(model, model_path)
-        st.success(f"Model trained and saved to {model_path}")
+    # Load the trained model
+    model = load('models/best_model.pkl')
 
     # Predict on the test set
     y_pred = model.predict(X_test)
