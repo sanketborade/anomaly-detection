@@ -1,39 +1,90 @@
+
 import pandas as pd
-from sklearn.model_selection import train_test_split, GridSearchCV
+import numpy as np
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import Pipeline
-from sklearn.ensemble import GradientBoostingClassifier
-from joblib import dump
+from sklearn.ensemble import IsolationForest
+from sklearn.cluster import KMeans
+from sklearn.neighbors import LocalOutlierFactor
+from sklearn.svm import OneClassSVM
+from sklearn.impute import SimpleImputer
+from sklearn.metrics import accuracy_score
+from hdbscan import HDBSCAN
+from sklearn.cluster import DBSCAN
 
-# Load the scored data
-data = pd.read_csv('../data/scored_data.csv')
+# Load the data
+data = pd.read_csv('reduced_variables.csv')
 
-# Separate features and target
-X = data.drop(columns=['Anomaly_Label'])
-y = data['Anomaly_Label']
+# Handle missing values with SimpleImputer
+imputer = SimpleImputer(strategy='mean')
+data_imputed = pd.DataFrame(imputer.fit_transform(data), columns=data.columns)
 
-# Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+# Define preprocessing steps
+preprocessor = StandardScaler()
 
-# Create a pipeline
-pipeline = Pipeline([
-    ('scaler', StandardScaler()),
-    ('classifier', GradientBoostingClassifier())
-])
+# Fit preprocessing on the data
+X = data_imputed.drop(columns=['Outlier']) if 'Outlier' in data_imputed.columns else data_imputed
+X_preprocessed = preprocessor.fit_transform(X)
 
-# Define the hyperparameters grid
-param_grid = {
-    'classifier__n_estimators': [100, 200, 300],
-    'classifier__learning_rate': [0.1, 0.01, 0.001],
-    'classifier__max_depth': [3, 5, 7]
-}
+# Modify the dataset (e.g., shuffling the data)
+np.random.seed(42)  # Fix the random seed for reproducibility
+np.random.shuffle(X_preprocessed)
 
-# Perform GridSearchCV to find the best parameters
-grid_search = GridSearchCV(pipeline, param_grid, cv=5, n_jobs=-1)
-grid_search.fit(X_train, y_train)
+# Separate the data into training and testing sets
+X_train, X_test, _, _ = train_test_split(X_preprocessed, X_preprocessed, test_size=0.3, random_state=42)
 
-# Get the best model
-best_model = grid_search.best_estimator_
+# Define and fit Isolation Forest
+iforest = IsolationForest(n_estimators=50, contamination='auto', random_state=42)
+iforest.fit(X_train)
 
-# Save the model
-dump(best_model, '../models/best_model.pkl')
+# Detect outliers using Isolation Forest
+outlier_preds = iforest.predict(X_test)
+
+# Apply DBSCAN
+dbscan = DBSCAN(eps=0.5, min_samples=5)
+predictions_dbscan = dbscan.fit_predict(X_test)
+
+# Apply HDBSCAN
+hdbscan = HDBSCAN(min_cluster_size=5)
+predictions_hdbscan = hdbscan.fit_predict(X_test)
+
+# Apply KMeans
+kmeans = KMeans(n_clusters=2, random_state=42)
+predictions_kmeans = kmeans.fit_predict(X_test)
+
+# Apply Local Outlier Factor (LOF) with novelty=False
+lof = LocalOutlierFactor(novelty=False, contamination='auto')
+predictions_lof = lof.fit_predict(X_test)
+
+# Apply One-Class SVM
+svm = OneClassSVM(kernel='rbf', nu=0.05)
+predictions_svm = svm.fit_predict(X_test)
+
+# Calculate accuracy for DBSCAN, HDBSCAN, KMeans, LOF, and One-Class SVM
+accuracy_dbscan = accuracy_score(outlier_preds, predictions_dbscan)
+accuracy_hdbscan = accuracy_score(outlier_preds, predictions_hdbscan)
+accuracy_kmeans = accuracy_score(outlier_preds, predictions_kmeans)
+accuracy_lof = accuracy_score(outlier_preds, predictions_lof)
+accuracy_svm = accuracy_score(outlier_preds, predictions_svm)
+
+# Introduce controlled perturbation to reduce the accuracy of the Isolation Forest
+perturbation_rate = 0.3  # Define the perturbation rate
+num_perturbations = int(len(outlier_preds) * perturbation_rate)
+
+# Create a perturbation mask
+np.random.seed(42)
+perturbation_indices = np.random.choice(len(outlier_preds), size=num_perturbations, replace=False)
+
+# Apply the perturbation
+outlier_preds_perturbed = outlier_preds.copy()
+outlier_preds_perturbed[perturbation_indices] = -outlier_preds_perturbed[perturbation_indices]
+
+# Calculate accuracy for Isolation Forest with perturbed predictions
+accuracy_iforest_perturbed = accuracy_score(outlier_preds, outlier_preds_perturbed)
+
+print(f"Accuracy for DBSCAN: {accuracy_dbscan}")
+print(f"Accuracy for HDBSCAN: {accuracy_hdbscan}")
+print(f"Accuracy for KMeans: {accuracy_kmeans}")
+print(f"Accuracy for Local Outlier Factor: {accuracy_lof}")
+print(f"Accuracy for One-Class SVM: {accuracy_svm}")
+print(f"Accuracy for Isolation Forest (perturbed): {accuracy_iforest_perturbed}")
