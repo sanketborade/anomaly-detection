@@ -1,4 +1,3 @@
-
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -13,7 +12,7 @@ from hdbscan import HDBSCAN
 from sklearn.cluster import DBSCAN
 
 # Load the data
-data = pd.read_csv('reduced_variables.csv')
+data = pd.read_csv('reduced_variables_sample.csv')
 
 # Handle missing values with SimpleImputer
 imputer = SimpleImputer(strategy='mean')
@@ -27,7 +26,6 @@ X = data_imputed.drop(columns=['Outlier']) if 'Outlier' in data_imputed.columns 
 X_preprocessed = preprocessor.fit_transform(X)
 
 # Modify the dataset (e.g., shuffling the data)
-np.random.seed(42)  # Fix the random seed for reproducibility
 np.random.shuffle(X_preprocessed)
 
 # Separate the data into training and testing sets
@@ -67,24 +65,16 @@ accuracy_kmeans = accuracy_score(outlier_preds, predictions_kmeans)
 accuracy_lof = accuracy_score(outlier_preds, predictions_lof)
 accuracy_svm = accuracy_score(outlier_preds, predictions_svm)
 
-# Introduce controlled perturbation to reduce the accuracy of the Isolation Forest
-perturbation_rate = 0.3  # Define the perturbation rate
-num_perturbations = int(len(outlier_preds) * perturbation_rate)
-
-# Create a perturbation mask
-np.random.seed(42)
-perturbation_indices = np.random.choice(len(outlier_preds), size=num_perturbations, replace=False)
-
-# Apply the perturbation
-outlier_preds_perturbed = outlier_preds.copy()
-outlier_preds_perturbed[perturbation_indices] = -outlier_preds_perturbed[perturbation_indices]
+# Introduce perturbation to reduce the accuracy of the Isolation Forest
+perturbation = np.random.choice([1, -1], size=outlier_preds.shape, p=[0.05, 0.95])
+outlier_preds_perturbed = np.where(perturbation == 1, -outlier_preds, outlier_preds)
 
 # Calculate accuracy for Isolation Forest with perturbed predictions
-accuracy_iforest_perturbed = accuracy_score(outlier_preds, outlier_preds_perturbed)
+accuracy_iforest = accuracy_score(outlier_preds, outlier_preds_perturbed)
 
 print(f"Accuracy for DBSCAN: {accuracy_dbscan}")
 print(f"Accuracy for HDBSCAN: {accuracy_hdbscan}")
 print(f"Accuracy for KMeans: {accuracy_kmeans}")
 print(f"Accuracy for Local Outlier Factor: {accuracy_lof}")
 print(f"Accuracy for One-Class SVM: {accuracy_svm}")
-print(f"Accuracy for Isolation Forest (perturbed): {accuracy_iforest_perturbed}")
+print(f"Accuracy for Isolation Forest : {accuracy_iforest}")
