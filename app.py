@@ -28,11 +28,7 @@ data = pd.read_csv(file_path)
 # Identify non-numeric columns
 non_numeric_columns = data.select_dtypes(include=['object']).columns
 
-# Option 1: Drop non-numeric columns
-# data = data.drop(columns=non_numeric_columns)
-
-# Option 2: Convert non-numeric columns to numeric (if applicable)
-# Example of using LabelEncoder for categorical columns
+# Convert non-numeric columns to numeric (if applicable)
 from sklearn.preprocessing import LabelEncoder
 for col in non_numeric_columns:
     le = LabelEncoder()
@@ -56,6 +52,9 @@ np.random.shuffle(X_preprocessed)
 # Separate the data into training and testing sets
 X_train, X_test, _, _ = train_test_split(X_preprocessed, X_preprocessed, test_size=0.3, random_state=42)
 
+# Get the number of training points
+n_train_points = X_train.shape[0]
+
 # Define and fit Isolation Forest
 iforest = IsolationForest(n_estimators=50, contamination='auto', random_state=42)
 iforest.fit(X_train)
@@ -71,12 +70,14 @@ predictions_dbscan = dbscan.fit_predict(X_test)
 hdbscan = HDBSCAN(min_cluster_size=5)
 predictions_hdbscan = hdbscan.fit_predict(X_test)
 
-# Apply KMeans
-kmeans = KMeans(n_clusters=2, random_state=42)
+# Apply KMeans (ensure n_clusters <= n_train_points)
+n_clusters = min(2, n_train_points)
+kmeans = KMeans(n_clusters=n_clusters, random_state=42)
 predictions_kmeans = kmeans.fit_predict(X_test)
 
-# Apply Local Outlier Factor (LOF) with novelty=False
-lof = LocalOutlierFactor(novelty=False, contamination='auto')
+# Apply Local Outlier Factor (LOF) with novelty=False (ensure n_neighbors <= n_train_points)
+n_neighbors = min(20, n_train_points)  # Adjust 20 based on your data
+lof = LocalOutlierFactor(novelty=False, contamination='auto', n_neighbors=n_neighbors)
 predictions_lof = lof.fit_predict(X_test)
 
 # Apply One-Class SVM
@@ -166,11 +167,11 @@ with tab3:
         labels = model.fit_predict(X_preprocessed)
         scores = model.outlier_scores_
     elif best_model_name == "KMeans":
-        model = KMeans(n_clusters=2, random_state=42)
+        model = KMeans(n_clusters=n_clusters, random_state=42)
         labels = model.predict(X_preprocessed)
         scores = -model.transform(X_preprocessed).min(axis=1)  # Inverse distance to cluster center
     elif best_model_name == "Local Outlier Factor":
-        model = LocalOutlierFactor(novelty=False, contamination='auto')
+        model = LocalOutlierFactor(novelty=False, contamination='auto', n_neighbors=n_neighbors)
         labels = model.fit_predict(X_preprocessed)
         scores = -model.negative_outlier_factor_  # LOF uses negative outlier factor
     elif best_model_name == "One-Class SVM":
