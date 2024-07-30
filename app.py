@@ -25,10 +25,8 @@ file_path = 'reduced_variables_2.csv'
 data = pd.read_csv(file_path)
 
 # Handle non-numeric columns
-# Identify non-numeric columns
 non_numeric_columns = data.select_dtypes(include=['object']).columns
 
-# Convert non-numeric columns to numeric (if applicable)
 from sklearn.preprocessing import LabelEncoder
 for col in non_numeric_columns:
     le = LabelEncoder()
@@ -40,75 +38,51 @@ data_imputed = pd.DataFrame(imputer.fit_transform(data), columns=data.columns)
 
 # Define preprocessing steps
 preprocessor = StandardScaler()
-
-# Fit preprocessing on the data
 X = data_imputed
 X_preprocessed = preprocessor.fit_transform(X)
 
-# Modify the dataset (e.g., shuffling the data)
-np.random.seed(42)  # Fix the random seed for reproducibility
+# Shuffle the data
+np.random.seed(42)
 np.random.shuffle(X_preprocessed)
 
-# Separate the data into training and testing sets
+# Split the data into training and testing sets
 X_train, X_test, _, _ = train_test_split(X_preprocessed, X_preprocessed, test_size=0.3, random_state=42)
-
-# Get the number of training points
 n_train_points = X_train.shape[0]
 
-# Define and fit Isolation Forest
-iforest = IsolationForest(n_estimators=50, contamination='auto', random_state=42)
-iforest.fit(X_train)
+# Define models
+models = {
+    "Isolation Forest": IsolationForest(n_estimators=50, contamination='auto', random_state=42),
+    "DBSCAN": DBSCAN(eps=0.5, min_samples=5),
+    "HDBSCAN": HDBSCAN(min_cluster_size=5),
+    "KMeans": KMeans(n_clusters=min(2, n_train_points), random_state=42),
+    "Local Outlier Factor": LocalOutlierFactor(novelty=False, contamination='auto', n_neighbors=min(20, n_train_points)),
+    "One-Class SVM": OneClassSVM(kernel='rbf', nu=0.05)
+}
 
-# Detect outliers using Isolation Forest
+# Fit Isolation Forest and detect outliers
+iforest = models["Isolation Forest"]
+iforest.fit(X_train)
 outlier_preds = iforest.predict(X_test)
 
-# Apply DBSCAN
-dbscan = DBSCAN(eps=0.5, min_samples=5)
-predictions_dbscan = dbscan.fit_predict(X_test)
+# Apply each model and handle exceptions
+predictions = {}
+accuracies = {}
+for name, model in models.items():
+    try:
+        if name in ["Isolation Forest", "One-Class SVM"]:
+            predictions[name] = model.fit(X_train).predict(X_test)
+        else:
+            predictions[name] = model.fit_predict(X_test)
+        accuracies[name] = accuracy_score(outlier_preds, predictions[name])
+    except Exception as e:
+        st.error(f"Error with {name}: {e}")
+        predictions[name] = np.zeros_like(outlier_preds)
+        accuracies[name] = 0
 
-# Apply HDBSCAN
-hdbscan = HDBSCAN(min_cluster_size=5)
-try:
-    predictions_hdbscan = hdbscan.fit_predict(X_test)
-except ValueError as e:
-    st.error(f"HDBSCAN error: {e}")
-    predictions_hdbscan = np.zeros_like(outlier_preds)
-
-# Apply KMeans (ensure n_clusters <= n_train_points)
-n_clusters = min(2, n_train_points)
-kmeans = KMeans(n_clusters=n_clusters, random_state=42)
-try:
-    predictions_kmeans = kmeans.fit_predict(X_test)
-except ValueError as e:
-    st.error(f"KMeans error: {e}")
-    predictions_kmeans = np.zeros_like(outlier_preds)
-
-# Apply Local Outlier Factor (LOF) with novelty=False (ensure n_neighbors <= n_train_points)
-n_neighbors = min(20, n_train_points)  # Adjust 20 based on your data
-lof = LocalOutlierFactor(novelty=False, contamination='auto', n_neighbors=n_neighbors)
-try:
-    predictions_lof = lof.fit_predict(X_test)
-except ValueError as e:
-    st.error(f"LOF error: {e}")
-    predictions_lof = np.zeros_like(outlier_preds)
-
-# Apply One-Class SVM
-svm = OneClassSVM(kernel='rbf', nu=0.05)
-predictions_svm = svm.fit_predict(X_test)
-
-# Calculate accuracy for DBSCAN, HDBSCAN, KMeans, LOF, and One-Class SVM
-accuracy_dbscan = accuracy_score(outlier_preds, predictions_dbscan)
-accuracy_hdbscan = accuracy_score(outlier_preds, predictions_hdbscan)
-accuracy_kmeans = accuracy_score(outlier_preds, predictions_kmeans)
-accuracy_lof = accuracy_score(outlier_preds, predictions_lof)
-accuracy_svm = accuracy_score(outlier_preds, predictions_svm)
-
-# Introduce perturbation to reduce the accuracy of the Isolation Forest
+# Introduce perturbation to reduce Isolation Forest accuracy
 perturbation = np.random.choice([1, -1], size=outlier_preds.shape, p=[0.1, 0.9])
 outlier_preds_perturbed = np.where(perturbation == 1, -outlier_preds, outlier_preds)
-
-# Calculate accuracy for Isolation Forest with perturbed predictions
-accuracy_iforest = accuracy_score(outlier_preds, outlier_preds_perturbed)
+accuracies["Isolation Forest Perturbed"] = accuracy_score(outlier_preds, outlier_preds_perturbed)
 
 with tab2:
     st.header("Exploratory Data Analysis")
@@ -117,7 +91,7 @@ with tab2:
     st.write(data.head())
     
     st.subheader("Summary Statistics")
-    summary_stats = data.describe().T  # Transpose the summary statistics
+    summary_stats = data.describe().T
     st.write(summary_stats)
     
     st.subheader("Missing Values")
@@ -126,15 +100,10 @@ with tab2:
     st.subheader("Correlation Matrix")
     correlation_matrix = data.corr()
     
-    # Display correlation matrix as a heatmap
     fig, ax = plt.subplots()
     sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', ax=ax)
     st.pyplot(fig)
     
-    # Display correlation matrix as a table
-    st.write("Correlation Matrix Values:")
-    st.write(correlation_matrix)
-
     st.subheader("Pair Plot")
     st.write("Due to performance constraints, this may take a while for large datasets.")
     if st.button("Generate Pair Plot"):
@@ -145,58 +114,24 @@ with tab3:
     st.header("Model Accuracy")
 
     # Display results
-    st.write("Accuracy for DBSCAN:", accuracy_dbscan)
-    st.write("Accuracy for HDBSCAN:", accuracy_hdbscan)
-    st.write("Accuracy for KMeans:", accuracy_kmeans)
-    st.write("Accuracy for Local Outlier Factor:", accuracy_lof)
-    st.write("Accuracy for One-Class SVM:", accuracy_svm)
-    st.write("Accuracy for Isolation Forest:", accuracy_iforest)
-
-    accuracies = {
-        "Isolation Forest": accuracy_iforest,
-        "DBSCAN": accuracy_dbscan,
-        "HDBSCAN": accuracy_hdbscan,
-        "KMeans": accuracy_kmeans,
-        "Local Outlier Factor": accuracy_lof,
-        "One-Class SVM": accuracy_svm
-    }
+    for name, accuracy in accuracies.items():
+        st.write(f"Accuracy for {name}: {accuracy}")
 
     best_model_name = max(accuracies, key=accuracies.get)
     st.subheader(f"Best Model: {best_model_name}")
     st.write(f"Accuracy: {accuracies[best_model_name]}")
 
     # Fit the best model on the entire dataset and score the data
-    if best_model_name == "Isolation Forest":
-        model = iforest
+    model = models[best_model_name]
+    if best_model_name in ["Isolation Forest", "One-Class SVM"]:
         scores = model.decision_function(X_preprocessed)
         labels = model.predict(X_preprocessed)
-    elif best_model_name == "DBSCAN":
-        model = DBSCAN(eps=0.5, min_samples=5)
+    else:
         labels = model.fit_predict(X_preprocessed)
-        scores = np.ones_like(labels)  # DBSCAN does not have a scoring function
-    elif best_model_name == "HDBSCAN":
-        model = HDBSCAN(min_cluster_size=5)
-        labels = model.fit_predict(X_preprocessed)
-        scores = model.outlier_scores_
-    elif best_model_name == "KMeans":
-        model = KMeans(n_clusters=n_clusters, random_state=42)
-        labels = model.predict(X_preprocessed)
-        scores = -model.transform(X_preprocessed).min(axis=1)  # Inverse distance to cluster center
-    elif best_model_name == "Local Outlier Factor":
-        model = LocalOutlierFactor(novelty=False, contamination='auto', n_neighbors=n_neighbors)
-        labels = model.fit_predict(X_preprocessed)
-        scores = -model.negative_outlier_factor_  # LOF uses negative outlier factor
-    elif best_model_name == "One-Class SVM":
-        model = OneClassSVM(kernel='rbf', nu=0.05)
-        model.fit(X_preprocessed)
-        labels = model.predict(X_preprocessed)
-        scores = model.decision_function(X_preprocessed)
+        scores = np.ones_like(labels) if best_model_name == "DBSCAN" else model.outlier_scores_
 
     # Convert labels to -1 for outliers and 1 for normal points
-    if best_model_name in ["Isolation Forest", "One-Class SVM"]:
-        labels = np.where(labels == 1, 1, -1)
-    else:
-        labels = np.where(labels == -1, -1, 1)
+    labels = np.where(labels == 1, 1, -1) if best_model_name in ["Isolation Forest", "One-Class SVM"] else np.where(labels == -1, -1, 1)
 
     # Add scores and labels to the original data
     data['Score'] = scores
@@ -208,7 +143,6 @@ with tab3:
     st.subheader("Data with Anomaly Labels")
     st.write(data)
 
-    # Count the occurrences of -1 and 1 in the Anomaly_Label column
     count_anomalies = data['Anomaly_Label'].value_counts()
     st.subheader("Anomaly Label Counts")
     st.write(f"Count of -1 (Outliers): {count_anomalies.get(-1, 0)}")
