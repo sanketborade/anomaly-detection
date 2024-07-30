@@ -21,7 +21,7 @@ st.title("Anomaly Detection on Trade Metrics Data")
 tab2, tab3 = st.tabs(["Exploratory Data Analysis", "Modelling"])
 
 # Load the data
-file_path = 'reduced_variables_1.csv'
+file_path = 'reduced_1.csv'
 data = pd.read_csv(file_path)
 
 # Handle missing values with SimpleImputer
