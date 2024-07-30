@@ -24,6 +24,20 @@ tab2, tab3 = st.tabs(["Exploratory Data Analysis", "Modelling"])
 file_path = 'reduced_variables_2.csv'
 data = pd.read_csv(file_path)
 
+# Handle non-numeric columns
+# Identify non-numeric columns
+non_numeric_columns = data.select_dtypes(include=['object']).columns
+
+# Option 1: Drop non-numeric columns
+# data = data.drop(columns=non_numeric_columns)
+
+# Option 2: Convert non-numeric columns to numeric (if applicable)
+# Example of using LabelEncoder for categorical columns
+from sklearn.preprocessing import LabelEncoder
+for col in non_numeric_columns:
+    le = LabelEncoder()
+    data[col] = le.fit_transform(data[col].astype(str))
+
 # Handle missing values with SimpleImputer
 imputer = SimpleImputer(strategy='mean')
 data_imputed = pd.DataFrame(imputer.fit_transform(data), columns=data.columns)
