@@ -68,17 +68,29 @@ predictions_dbscan = dbscan.fit_predict(X_test)
 
 # Apply HDBSCAN
 hdbscan = HDBSCAN(min_cluster_size=5)
-predictions_hdbscan = hdbscan.fit_predict(X_test)
+try:
+    predictions_hdbscan = hdbscan.fit_predict(X_test)
+except ValueError as e:
+    st.error(f"HDBSCAN error: {e}")
+    predictions_hdbscan = np.zeros_like(outlier_preds)
 
 # Apply KMeans (ensure n_clusters <= n_train_points)
 n_clusters = min(2, n_train_points)
 kmeans = KMeans(n_clusters=n_clusters, random_state=42)
-predictions_kmeans = kmeans.fit_predict(X_test)
+try:
+    predictions_kmeans = kmeans.fit_predict(X_test)
+except ValueError as e:
+    st.error(f"KMeans error: {e}")
+    predictions_kmeans = np.zeros_like(outlier_preds)
 
 # Apply Local Outlier Factor (LOF) with novelty=False (ensure n_neighbors <= n_train_points)
 n_neighbors = min(20, n_train_points)  # Adjust 20 based on your data
 lof = LocalOutlierFactor(novelty=False, contamination='auto', n_neighbors=n_neighbors)
-predictions_lof = lof.fit_predict(X_test)
+try:
+    predictions_lof = lof.fit_predict(X_test)
+except ValueError as e:
+    st.error(f"LOF error: {e}")
+    predictions_lof = np.zeros_like(outlier_preds)
 
 # Apply One-Class SVM
 svm = OneClassSVM(kernel='rbf', nu=0.05)
