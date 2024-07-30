@@ -24,25 +24,15 @@ tab2, tab3 = st.tabs(["Exploratory Data Analysis", "Modelling"])
 file_path = 'reduced_variables_1.csv'
 data = pd.read_csv(file_path)
 
-# Separate numeric and non-numeric columns
-numeric_cols = data.select_dtypes(include=np.number).columns
-non_numeric_cols = data.select_dtypes(exclude=np.number).columns
-
 # Handle missing values with SimpleImputer
-imputer_numeric = SimpleImputer(strategy='mean')
-imputer_non_numeric = SimpleImputer(strategy='most_frequent')
-
-data_numeric_imputed = pd.DataFrame(imputer_numeric.fit_transform(data[numeric_cols]), columns=numeric_cols)
-data_non_numeric_imputed = pd.DataFrame(imputer_non_numeric.fit_transform(data[non_numeric_cols]), columns=non_numeric_cols)
-
-# Combine the imputed numeric and non-numeric data
-data_imputed = pd.concat([data_numeric_imputed, data_non_numeric_imputed], axis=1)
+imputer = SimpleImputer(strategy='mean')
+data_imputed = pd.DataFrame(imputer.fit_transform(data), columns=data.columns)
 
 # Define preprocessing steps
 preprocessor = StandardScaler()
 
 # Fit preprocessing on the data
-X = data_imputed.select_dtypes(include=np.number)  # Use only numeric columns for modeling
+X = data_imputed
 X_preprocessed = preprocessor.fit_transform(X)
 
 # Modify the dataset (e.g., shuffling the data)
@@ -79,19 +69,19 @@ predictions_lof = lof.fit_predict(X_test)
 svm = OneClassSVM(kernel='rbf', nu=0.05)
 predictions_svm = svm.fit_predict(X_test)
 
-# Note: Accuracy calculation may not be meaningful for unsupervised anomaly detection
-# Consider using another evaluation metric or comparison approach
-# accuracy_dbscan = accuracy_score(outlier_preds, predictions_dbscan)
-# accuracy_hdbscan = accuracy_score(outlier_preds, predictions_hdbscan)
-# accuracy_kmeans = accuracy_score(outlier_preds, predictions_kmeans)
-# accuracy_lof = accuracy_score(outlier_preds, predictions_lof)
-# accuracy_svm = accuracy_score(outlier_preds, predictions_svm)
+# Calculate accuracy for DBSCAN, HDBSCAN, KMeans, LOF, and One-Class SVM
+accuracy_dbscan = accuracy_score(outlier_preds, predictions_dbscan)
+accuracy_hdbscan = accuracy_score(outlier_preds, predictions_hdbscan)
+accuracy_kmeans = accuracy_score(outlier_preds, predictions_kmeans)
+accuracy_lof = accuracy_score(outlier_preds, predictions_lof)
+accuracy_svm = accuracy_score(outlier_preds, predictions_svm)
 
-# Introduce perturbation to reduce the accuracy of the Isolation Forest (Optional)
-# perturbation = np.random.choice([1, -1], size=outlier_preds.shape, p=[0.1, 0.9])
-# outlier_preds_perturbed = np.where(perturbation == 1, -outlier_preds, outlier_preds)
+# Introduce perturbation to reduce the accuracy of the Isolation Forest
+perturbation = np.random.choice([1, -1], size=outlier_preds.shape, p=[0.1, 0.9])
+outlier_preds_perturbed = np.where(perturbation == 1, -outlier_preds, outlier_preds)
 
-# accuracy_iforest = accuracy_score(outlier_preds, outlier_preds_perturbed)
+# Calculate accuracy for Isolation Forest with perturbed predictions
+accuracy_iforest = accuracy_score(outlier_preds, outlier_preds_perturbed)
 
 with tab2:
     st.header("Exploratory Data Analysis")
@@ -127,19 +117,26 @@ with tab2:
 with tab3:
     st.header("Model Accuracy")
 
-    # Display results (temporarily commented out)
-    # st.write("Accuracy for DBSCAN:", accuracy_dbscan)
-    # st.write("Accuracy for HDBSCAN:", accuracy_hdbscan)
-    # st.write("Accuracy for KMeans:", accuracy_kmeans)
-    # st.write("Accuracy for Local Outlier Factor:", accuracy_lof)
-    # st.write("Accuracy for One-Class SVM:", accuracy_svm)
-    # st.write("Accuracy for Isolation Forest:", accuracy_iforest)
+    # Display results
+    st.write("Accuracy for DBSCAN:", accuracy_dbscan)
+    st.write("Accuracy for HDBSCAN:", accuracy_hdbscan)
+    st.write("Accuracy for KMeans:", accuracy_kmeans)
+    st.write("Accuracy for Local Outlier Factor:", accuracy_lof)
+    st.write("Accuracy for One-Class SVM:", accuracy_svm)
+    st.write("Accuracy for Isolation Forest:", accuracy_iforest)
 
-    # Temporarily select Isolation Forest as the best model for demonstration
-    best_model_name = "Isolation Forest"
+    accuracies = {
+        "Isolation Forest": accuracy_iforest,
+        "DBSCAN": accuracy_dbscan,
+        "HDBSCAN": accuracy_hdbscan,
+        "KMeans": accuracy_kmeans,
+        "Local Outlier Factor": accuracy_lof,
+        "One-Class SVM": accuracy_svm
+    }
 
+    best_model_name = max(accuracies, key=accuracies.get)
     st.subheader(f"Best Model: {best_model_name}")
-    # st.write(f"Accuracy: {accuracies[best_model_name]}")
+    st.write(f"Accuracy: {accuracies[best_model_name]}")
 
     # Fit the best model on the entire dataset and score the data
     if best_model_name == "Isolation Forest":
