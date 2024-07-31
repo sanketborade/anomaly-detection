@@ -22,7 +22,7 @@ tab2, tab3 = st.tabs(["Exploratory Data Analysis", "Modelling"])
 
 # Load the data
 # Replace 'your_data.csv' with the path to your CSV file
-data = pd.read_csv('reduced_variables_3.csv')
+data = pd.read_csv('reduced_variables_1.csv')
 
 # Handle missing values with SimpleImputer
 imputer = SimpleImputer(strategy='mean')
