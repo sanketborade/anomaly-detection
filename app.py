@@ -15,14 +15,14 @@ from hdbscan import HDBSCAN
 from sklearn.cluster import DBSCAN
 
 # Streamlit interface
-st.title("Anomaly Detection on Trade Metrics Data")
+st.title("Anomaly Detection")
 
 # Create tabs
 tab2, tab3 = st.tabs(["Exploratory Data Analysis", "Modelling"])
 
 # Load the data
-file_path = 'reduced_variables_1.csv'
-data = pd.read_csv(file_path)
+# Replace 'your_data.csv' with the path to your CSV file
+data = pd.read_csv('reduced_variables_1')
 
 # Handle missing values with SimpleImputer
 imputer = SimpleImputer(strategy='mean')
@@ -32,7 +32,7 @@ data_imputed = pd.DataFrame(imputer.fit_transform(data), columns=data.columns)
 preprocessor = StandardScaler()
 
 # Fit preprocessing on the data
-X = data_imputed
+X = data_imputed.drop(columns=['Outlier']) if 'Outlier' in data_imputed.columns else data_imputed
 X_preprocessed = preprocessor.fit_transform(X)
 
 # Modify the dataset (e.g., shuffling the data)
